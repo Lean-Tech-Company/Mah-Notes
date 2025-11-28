@@ -1,0 +1,1344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Notes</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #5D93E1;
+            --secondary-color: #7FA8EB;
+            --accent-color: #FF9E7A;
+            --light-color: #F8FAFF;
+            --dark-color: #4A5568;
+            --success-color: #68D391;
+            --warning-color: #F6AD55;
+            --danger-color: #FC8181;
+            --border-radius: 24px;
+            --button-radius: 20px;
+            --card-radius: 16px;
+            --box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #F0F4FF;
+            color: var(--dark-color);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 20px 0;
+            box-shadow: var(--box-shadow);
+            border-radius: 0 0 var(--border-radius) var(--border-radius);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.8rem;
+            font-weight: bold;
+        }
+
+        .logo i {
+            font-size: 2rem;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            border: 2px solid white;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: var(--button-radius);
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-secondary {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+
+        .btn-accent {
+            background-color: var(--accent-color);
+            color: white;
+        }
+
+        .btn-success {
+            background-color: var(--success-color);
+            color: white;
+        }
+
+        .btn-danger {
+            background-color: var(--danger-color);
+            color: white;
+        }
+
+        .btn-light {
+            background-color: white;
+            color: var(--dark-color);
+            box-shadow: var(--box-shadow);
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+        }
+
+        .auth-container {
+            max-width: 450px;
+            margin: 60px auto;
+            padding: 40px;
+            background-color: white;
+            border-radius: var(--card-radius);
+            box-shadow: var(--box-shadow);
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .auth-header h2 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .auth-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+
+        .form-group input {
+            padding: 14px;
+            border: 1px solid #E2E8F0;
+            border-radius: var(--button-radius);
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(93, 147, 225, 0.2);
+        }
+
+        .auth-options {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .divider {
+            text-align: center;
+            margin: 20px 0;
+            position: relative;
+        }
+
+        .divider::before {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background-color: #E2E8F0;
+        }
+
+        .divider span {
+            background-color: white;
+            padding: 0 15px;
+            color: #718096;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-top: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background-color: white;
+            border-radius: var(--card-radius);
+            box-shadow: var(--box-shadow);
+            padding: 25px;
+            margin-bottom: 25px;
+            transition: var(--transition);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--dark-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-title i {
+            color: var(--primary-color);
+        }
+
+        .quick-notes {
+            margin-top: 40px;
+        }
+
+        .quick-notes-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+        }
+
+        @media (max-width: 768px) {
+            .quick-notes-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .quick-note {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .quick-note textarea {
+            min-height: 120px;
+            padding: 15px;
+            border: 1px solid #E2E8F0;
+            border-radius: var(--card-radius);
+            resize: vertical;
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+
+        .quick-note textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(93, 147, 225, 0.2);
+        }
+
+        .quick-note-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+        }
+
+        .modal-content {
+            background-color: white;
+            border-radius: var(--card-radius);
+            padding: 25px;
+            width: 90%;
+            max-width: 550px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--dark-color);
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.8rem;
+            cursor: pointer;
+            color: #718096;
+            transition: var(--transition);
+        }
+
+        .close-modal:hover {
+            color: var(--danger-color);
+        }
+
+        .modal-body {
+            margin-bottom: 25px;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        .checklist-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 15px;
+            border: 1px solid #E2E8F0;
+            border-radius: var(--button-radius);
+            margin-bottom: 10px;
+            cursor: move;
+            background-color: white;
+            transition: var(--transition);
+        }
+
+        .checklist-item:hover {
+            background-color: #F7FAFC;
+        }
+
+        .checklist-item.dragging {
+            opacity: 0.6;
+            transform: rotate(3deg);
+        }
+
+        .checklist-item input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .checklist-item.completed span {
+            text-decoration: line-through;
+            color: #A0AEC0;
+        }
+
+        .reusable-options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #F7FAFC;
+            border-radius: var(--card-radius);
+        }
+
+        .reusable-option {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .reusable-option input[type="radio"] {
+            width: 20px;
+            height: 20px;
+        }
+
+        .days-selector {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 15px;
+        }
+
+        .day-checkbox {
+            display: none;
+        }
+
+        .day-label {
+            padding: 8px 14px;
+            background-color: #EDF2F7;
+            border-radius: var(--button-radius);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .day-checkbox:checked + .day-label {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .notes-list {
+            max-height: 350px;
+            overflow-y: auto;
+            margin-top: 15px;
+        }
+
+        .note-item {
+            padding: 15px;
+            border-bottom: 1px solid #E2E8F0;
+            cursor: pointer;
+            transition: var(--transition);
+            border-radius: 8px;
+        }
+
+        .note-item:hover {
+            background-color: #F7FAFC;
+        }
+
+        .note-item.selected {
+            background-color: #EBF4FF;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 30px;
+        }
+
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left-color: var(--primary-color);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #718096;
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            color: #CBD5E0;
+        }
+
+        .welcome-message {
+            text-align: center;
+            margin: 30px 0;
+            color: var(--dark-color);
+        }
+
+        .feature-highlights {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .feature {
+            text-align: center;
+            padding: 20px;
+            background: white;
+            border-radius: var(--card-radius);
+            box-shadow: var(--box-shadow);
+        }
+
+        .feature i {
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container header-content">
+            <div class="logo">
+                <i class="fas fa-sticky-note"></i>
+                <span>My Notes</span>
+            </div>
+            <div class="user-info hidden" id="userInfo">
+                <div class="user-avatar" id="userAvatar">U</div>
+                <span id="userName">User</span>
+                <button class="btn btn-light" id="signOutBtn">
+                    <i class="fas fa-sign-out-alt"></i> Sign Out
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Authentication Section -->
+        <div id="authSection" class="auth-container">
+            <div class="auth-header">
+                <h2>Welcome to My Notes</h2>
+                <p>Your personal space for notes and checklists</p>
+            </div>
+            <div class="auth-form">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" placeholder="Enter your email">
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" placeholder="Enter your password">
+                </div>
+                <button class="btn btn-primary" id="signInBtn">
+                    <i class="fas fa-sign-in-alt"></i> Sign In
+                </button>
+                <button class="btn btn-secondary" id="signUpBtn">
+                    <i class="fas fa-user-plus"></i> Sign Up
+                </button>
+            </div>
+            <div class="divider">
+                <span>or continue with</span>
+            </div>
+            <div class="auth-options">
+                <button class="btn btn-light" id="googleSignInBtn">
+                    <i class="fab fa-google"></i> Sign in with Google
+                </button>
+            </div>
+        </div>
+
+        <!-- Dashboard Section -->
+        <div id="dashboardSection" class="hidden">
+            <div class="welcome-message">
+                <h2>Hello, <span id="welcomeUserName">User</span>!</h2>
+                <p>What would you like to do today?</p>
+            </div>
+
+            <div class="dashboard">
+                <!-- Notes Section -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-edit"></i> My Notes
+                        </div>
+                        <button class="btn btn-primary" id="addNoteBtn">
+                            <i class="fas fa-plus"></i> Add Note
+                        </button>
+                    </div>
+                    <div id="notesList" class="notes-list">
+                        <div class="empty-state">
+                            <i class="fas fa-edit"></i>
+                            <h3>No notes yet</h3>
+                            <p>Create your first note to get started</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Checklist Section -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-check-square"></i> My Checklists
+                        </div>
+                        <button class="btn btn-primary" id="addChecklistBtn">
+                            <i class="fas fa-plus"></i> Add Checklist
+                        </button>
+                    </div>
+                    <div id="checklistsList" class="notes-list">
+                        <div class="empty-state">
+                            <i class="fas fa-check-square"></i>
+                            <h3>No checklists yet</h3>
+                            <p>Create your first checklist to get started</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Notes Section -->
+            <div class="quick-notes">
+                <h2 class="card-title">
+                    <i class="fas fa-bolt"></i> Quick Notes
+                </h2>
+                <p>Jot down quick thoughts or checklist items</p>
+                
+                <div class="quick-notes-container">
+                    <div class="quick-note">
+                        <label for="quickNote">Quick Note</label>
+                        <textarea id="quickNote" placeholder="Type your quick note here..."></textarea>
+                        <div class="quick-note-actions hidden" id="quickNoteActions">
+                            <button class="btn btn-danger" id="discardQuickNoteBtn">
+                                <i class="fas fa-trash"></i> Discard
+                            </button>
+                            <button class="btn btn-success" id="saveQuickNoteBtn">
+                                <i class="fas fa-save"></i> Save
+                            </button>
+                        </div>
+                    </div>
+                    <div class="quick-note">
+                        <label for="quickChecklist">Quick Checklist</label>
+                        <textarea id="quickChecklist" placeholder="Type your quick checklist items here, one per line..."></textarea>
+                        <div class="quick-note-actions hidden" id="quickChecklistActions">
+                            <button class="btn btn-danger" id="discardQuickChecklistBtn">
+                                <i class="fas fa-trash"></i> Discard
+                            </button>
+                            <button class="btn btn-success" id="saveQuickChecklistBtn">
+                                <i class="fas fa-save"></i> Save
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading Indicator -->
+        <div id="loadingIndicator" class="loading hidden">
+            <div class="spinner"></div>
+            <p>Loading...</p>
+        </div>
+    </div>
+
+    <!-- Add Note Modal -->
+    <div id="addNoteModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Add New Note</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="noteTitle">Title</label>
+                    <input type="text" id="noteTitle" placeholder="Enter note title">
+                </div>
+                <div class="form-group">
+                    <label for="noteContent">Content</label>
+                    <textarea id="noteContent" placeholder="Enter note content" rows="5"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-danger" id="cancelNoteBtn">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+                <button class="btn btn-success" id="saveNoteBtn">
+                    <i class="fas fa-save"></i> Save Note
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Checklist Modal -->
+    <div id="addChecklistModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Add New Checklist</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="checklistTitle">Title</label>
+                    <input type="text" id="checklistTitle" placeholder="Enter checklist title">
+                </div>
+                <div class="form-group">
+                    <label for="checklistItems">Items (one per line)</label>
+                    <textarea id="checklistItems" placeholder="Enter checklist items, one per line" rows="5"></textarea>
+                </div>
+                <div class="reusable-options">
+                    <h4>Reusable Options</h4>
+                    <div class="reusable-option">
+                        <input type="radio" id="reusableOnce" name="reusable" value="once" checked>
+                        <label for="reusableOnce">Use once</label>
+                    </div>
+                    <div class="reusable-option">
+                        <input type="radio" id="reusableWeekly" name="reusable" value="weekly">
+                        <label for="reusableWeekly">Use weekly</label>
+                    </div>
+                    <div class="reusable-option">
+                        <input type="radio" id="reusableInfinite" name="reusable" value="infinite">
+                        <label for="reusableInfinite">Use infinite</label>
+                    </div>
+                    <div id="daysSelector" class="days-selector hidden">
+                        <input type="checkbox" id="monday" class="day-checkbox">
+                        <label for="monday" class="day-label">Mon</label>
+                        <input type="checkbox" id="tuesday" class="day-checkbox">
+                        <label for="tuesday" class="day-label">Tue</label>
+                        <input type="checkbox" id="wednesday" class="day-checkbox">
+                        <label for="wednesday" class="day-label">Wed</label>
+                        <input type="checkbox" id="thursday" class="day-checkbox">
+                        <label for="thursday" class="day-label">Thu</label>
+                        <input type="checkbox" id="friday" class="day-checkbox">
+                        <label for="friday" class="day-label">Fri</label>
+                        <input type="checkbox" id="saturday" class="day-checkbox">
+                        <label for="saturday" class="day-label">Sat</label>
+                        <input type="checkbox" id="sunday" class="day-checkbox">
+                        <label for="sunday" class="day-label">Sun</label>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-danger" id="cancelChecklistBtn">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+                <button class="btn btn-success" id="saveChecklistBtn">
+                    <i class="fas fa-save"></i> Save Checklist
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Save Quick Note Modal -->
+    <div id="saveQuickNoteModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Save Quick Note</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Select where to save your quick note:</p>
+                <div id="noteTitlesList" class="notes-list">
+                    <!-- Note titles will be dynamically added here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-danger" id="cancelSaveQuickNoteBtn">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+                <button class="btn btn-success" id="confirmSaveQuickNoteBtn">
+                    <i class="fas fa-save"></i> Save
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Save Quick Checklist Modal -->
+    <div id="saveQuickChecklistModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Save Quick Checklist</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Select where to save your quick checklist:</p>
+                <div id="checklistTitlesList" class="notes-list">
+                    <!-- Checklist titles will be dynamically added here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-danger" id="cancelSaveQuickChecklistBtn">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+                <button class="btn btn-success" id="confirmSaveQuickChecklistBtn">
+                    <i class="fas fa-save"></i> Save
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // This is a simplified version for demonstration
+        // In a real application, you would integrate with Firebase
+        
+        // DOM Elements
+        const authSection = document.getElementById('authSection');
+        const dashboardSection = document.getElementById('dashboardSection');
+        const userInfo = document.getElementById('userInfo');
+        const userAvatar = document.getElementById('userAvatar');
+        const userName = document.getElementById('userName');
+        const welcomeUserName = document.getElementById('welcomeUserName');
+        const signOutBtn = document.getElementById('signOutBtn');
+        const signInBtn = document.getElementById('signInBtn');
+        const signUpBtn = document.getElementById('signUpBtn');
+        const googleSignInBtn = document.getElementById('googleSignInBtn');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+
+        // Notes Elements
+        const addNoteBtn = document.getElementById('addNoteBtn');
+        const notesList = document.getElementById('notesList');
+        const addNoteModal = document.getElementById('addNoteModal');
+        const cancelNoteBtn = document.getElementById('cancelNoteBtn');
+        const saveNoteBtn = document.getElementById('saveNoteBtn');
+        const noteTitle = document.getElementById('noteTitle');
+        const noteContent = document.getElementById('noteContent');
+
+        // Checklist Elements
+        const addChecklistBtn = document.getElementById('addChecklistBtn');
+        const checklistsList = document.getElementById('checklistsList');
+        const addChecklistModal = document.getElementById('addChecklistModal');
+        const cancelChecklistBtn = document.getElementById('cancelChecklistBtn');
+        const saveChecklistBtn = document.getElementById('saveChecklistBtn');
+        const checklistTitle = document.getElementById('checklistTitle');
+        const checklistItems = document.getElementById('checklistItems');
+        const reusableOptions = document.querySelectorAll('input[name="reusable"]');
+        const daysSelector = document.getElementById('daysSelector');
+
+        // Quick Notes Elements
+        const quickNote = document.getElementById('quickNote');
+        const quickChecklist = document.getElementById('quickChecklist');
+        const quickNoteActions = document.getElementById('quickNoteActions');
+        const quickChecklistActions = document.getElementById('quickChecklistActions');
+        const discardQuickNoteBtn = document.getElementById('discardQuickNoteBtn');
+        const saveQuickNoteBtn = document.getElementById('saveQuickNoteBtn');
+        const discardQuickChecklistBtn = document.getElementById('discardQuickChecklistBtn');
+        const saveQuickChecklistBtn = document.getElementById('saveQuickChecklistBtn');
+        const saveQuickNoteModal = document.getElementById('saveQuickNoteModal');
+        const saveQuickChecklistModal = document.getElementById('saveQuickChecklistModal');
+        const noteTitlesList = document.getElementById('noteTitlesList');
+        const checklistTitlesList = document.getElementById('checklistTitlesList');
+        const cancelSaveQuickNoteBtn = document.getElementById('cancelSaveQuickNoteBtn');
+        const confirmSaveQuickNoteBtn = document.getElementById('confirmSaveQuickNoteBtn');
+        const cancelSaveQuickChecklistBtn = document.getElementById('cancelSaveQuickChecklistBtn');
+        const confirmSaveQuickChecklistBtn = document.getElementById('confirmSaveQuickChecklistBtn');
+
+        // Demo data
+        let notes = [
+            ];
+
+        let checklists = [
+            
+        ];
+
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if user is logged in (for demo purposes, we'll simulate a logged-in state)
+            // In a real app, you would check Firebase auth state
+            setTimeout(() => {
+                showDashboard();
+                loadUserData();
+            }, 1000);
+        });
+
+        // Authentication Functions
+        function showAuth() {
+            authSection.classList.remove('hidden');
+            dashboardSection.classList.add('hidden');
+            userInfo.classList.add('hidden');
+        }
+
+        function showDashboard() {
+            authSection.classList.add('hidden');
+            dashboardSection.classList.remove('hidden');
+            userInfo.classList.remove('hidden');
+            userName.textContent = 'Demo User';
+            welcomeUserName.textContent = 'Demo User';
+            userAvatar.textContent = 'D';
+        }
+
+        function showLoading() {
+            loadingIndicator.classList.remove('hidden');
+        }
+
+        function hideLoading() {
+            loadingIndicator.classList.add('hidden');
+        }
+
+        // Event Listeners for Authentication
+        signInBtn.addEventListener('click', () => {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            if (!email || !password) {
+                alert('Please enter both email and password');
+                return;
+            }
+            
+            showLoading();
+            // In a real app, you would call Firebase signInWithEmailAndPassword here
+            setTimeout(() => {
+                hideLoading();
+                showDashboard();
+                loadUserData();
+            }, 1500);
+        });
+
+        signUpBtn.addEventListener('click', () => {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            if (!email || !password) {
+                alert('Please enter both email and password');
+                return;
+            }
+            
+            showLoading();
+            // In a real app, you would call Firebase createUserWithEmailAndPassword here
+            setTimeout(() => {
+                hideLoading();
+                showDashboard();
+                loadUserData();
+            }, 1500);
+        });
+
+        googleSignInBtn.addEventListener('click', () => {
+            showLoading();
+            // In a real app, you would call Firebase signInWithPopup here
+            setTimeout(() => {
+                hideLoading();
+                showDashboard();
+                loadUserData();
+            }, 1500);
+        });
+
+        signOutBtn.addEventListener('click', () => {
+            showAuth();
+        });
+
+        // Modal Functions
+        function openModal(modal) {
+            modal.style.display = 'flex';
+        }
+
+        function closeModal(modal) {
+            modal.style.display = 'none';
+        }
+
+        // Event Listeners for Modals
+        document.querySelectorAll('.close-modal').forEach(button => {
+            button.addEventListener('click', function() {
+                const modal = this.closest('.modal');
+                closeModal(modal);
+            });
+        });
+
+        // Notes Functions
+        addNoteBtn.addEventListener('click', () => {
+            noteTitle.value = '';
+            noteContent.value = '';
+            openModal(addNoteModal);
+        });
+
+        cancelNoteBtn.addEventListener('click', () => {
+            closeModal(addNoteModal);
+        });
+
+        saveNoteBtn.addEventListener('click', () => {
+            const title = noteTitle.value.trim();
+            const content = noteContent.value.trim();
+            
+            if (!title || !content) {
+                alert('Please enter both title and content');
+                return;
+            }
+            
+            const noteId = 'note-' + Date.now();
+            const note = {
+                id: noteId,
+                title: title,
+                content: content,
+                createdAt: new Date().toISOString()
+            };
+            
+            notes.push(note);
+            renderNotes();
+            closeModal(addNoteModal);
+        });
+
+        // Checklist Functions
+        addChecklistBtn.addEventListener('click', () => {
+            checklistTitle.value = '';
+            checklistItems.value = '';
+            document.getElementById('reusableOnce').checked = true;
+            daysSelector.classList.add('hidden');
+            openModal(addChecklistModal);
+        });
+
+        // Show/hide days selector based on reusable option
+        reusableOptions.forEach(option => {
+            option.addEventListener('change', () => {
+                if (option.value === 'weekly') {
+                    daysSelector.classList.remove('hidden');
+                } else {
+                    daysSelector.classList.add('hidden');
+                }
+            });
+        });
+
+        cancelChecklistBtn.addEventListener('click', () => {
+            closeModal(addChecklistModal);
+        });
+
+        saveChecklistBtn.addEventListener('click', () => {
+            const title = checklistTitle.value.trim();
+            const itemsText = checklistItems.value.trim();
+            
+            if (!title || !itemsText) {
+                alert('Please enter both title and items');
+                return;
+            }
+            
+            const items = itemsText.split('\n').filter(item => item.trim() !== '');
+            if (items.length === 0) {
+                alert('Please enter at least one checklist item');
+                return;
+            }
+            
+            const checklistId = 'checklist-' + Date.now();
+            const selectedReusable = document.querySelector('input[name="reusable"]:checked').value;
+            
+            let reusableConfig = {};
+            if (selectedReusable === 'weekly') {
+                const selectedDays = [];
+                document.querySelectorAll('.day-checkbox:checked').forEach(checkbox => {
+                    selectedDays.push(checkbox.id);
+                });
+                
+                if (selectedDays.length === 0) {
+                    alert('Please select at least one day for weekly reuse');
+                    return;
+                }
+                
+                reusableConfig = {
+                    type: 'weekly',
+                    days: selectedDays
+                };
+            } else if (selectedReusable === 'infinite') {
+                reusableConfig = {
+                    type: 'infinite'
+                };
+            } else {
+                reusableConfig = {
+                    type: 'once'
+                };
+            }
+            
+            const checklistItemsWithStatus = items.map((item, index) => ({
+                id: index,
+                text: item.trim(),
+                completed: false
+            }));
+            
+            const checklist = {
+                id: checklistId,
+                title: title,
+                items: checklistItemsWithStatus,
+                reusable: reusableConfig,
+                createdAt: new Date().toISOString()
+            };
+            
+            checklists.push(checklist);
+            renderChecklists();
+            closeModal(addChecklistModal);
+        });
+
+        // Quick Notes Functions
+        quickNote.addEventListener('input', () => {
+            if (quickNote.value.trim() !== '') {
+                quickNoteActions.classList.remove('hidden');
+            } else {
+                quickNoteActions.classList.add('hidden');
+            }
+        });
+
+        quickChecklist.addEventListener('input', () => {
+            if (quickChecklist.value.trim() !== '') {
+                quickChecklistActions.classList.remove('hidden');
+            } else {
+                quickChecklistActions.classList.add('hidden');
+            }
+        });
+
+        discardQuickNoteBtn.addEventListener('click', () => {
+            quickNote.value = '';
+            quickNoteActions.classList.add('hidden');
+        });
+
+        discardQuickChecklistBtn.addEventListener('click', () => {
+            quickChecklist.value = '';
+            quickChecklistActions.classList.add('hidden');
+        });
+
+        saveQuickNoteBtn.addEventListener('click', () => {
+            const quickNoteContent = quickNote.value.trim();
+            if (!quickNoteContent) {
+                alert('Please enter a quick note');
+                return;
+            }
+            
+            // Populate note titles list
+            noteTitlesList.innerHTML = '';
+            
+            if (notes.length === 0) {
+                noteTitlesList.innerHTML = '<p>No notes available. Please create a note first.</p>';
+            } else {
+                notes.forEach(note => {
+                    const noteItem = document.createElement('div');
+                    noteItem.className = 'note-item';
+                    noteItem.textContent = note.title;
+                    noteItem.dataset.id = note.id;
+                    
+                    noteItem.addEventListener('click', () => {
+                        noteItem.classList.toggle('selected');
+                    });
+                    
+                    noteTitlesList.appendChild(noteItem);
+                });
+            }
+            
+            openModal(saveQuickNoteModal);
+        });
+
+        saveQuickChecklistBtn.addEventListener('click', () => {
+            const quickChecklistContent = quickChecklist.value.trim();
+            if (!quickChecklistContent) {
+                alert('Please enter quick checklist items');
+                return;
+            }
+            
+            // Populate checklist titles list
+            checklistTitlesList.innerHTML = '';
+            
+            if (checklists.length === 0) {
+                checklistTitlesList.innerHTML = '<p>No checklists available. Please create a checklist first.</p>';
+            } else {
+                checklists.forEach(checklist => {
+                    const checklistItem = document.createElement('div');
+                    checklistItem.className = 'note-item';
+                    checklistItem.textContent = checklist.title;
+                    checklistItem.dataset.id = checklist.id;
+                    
+                    checklistItem.addEventListener('click', () => {
+                        checklistItem.classList.toggle('selected');
+                    });
+                    
+                    checklistTitlesList.appendChild(checklistItem);
+                });
+            }
+            
+            openModal(saveQuickChecklistModal);
+        });
+
+        cancelSaveQuickNoteBtn.addEventListener('click', () => {
+            closeModal(saveQuickNoteModal);
+        });
+
+        confirmSaveQuickNoteBtn.addEventListener('click', () => {
+            const quickNoteContent = quickNote.value.trim();
+            const selectedNotes = document.querySelectorAll('#noteTitlesList .note-item.selected');
+            
+            if (selectedNotes.length === 0) {
+                alert('Please select at least one note to add the quick note to');
+                return;
+            }
+            
+            selectedNotes.forEach(noteItem => {
+                const noteId = noteItem.dataset.id;
+                const note = notes.find(n => n.id === noteId);
+                if (note) {
+                    note.content += '\n\n' + quickNoteContent;
+                }
+            });
+            
+            quickNote.value = '';
+            quickNoteActions.classList.add('hidden');
+            closeModal(saveQuickNoteModal);
+            alert('Quick note saved successfully!');
+            renderNotes();
+        });
+
+        cancelSaveQuickChecklistBtn.addEventListener('click', () => {
+            closeModal(saveQuickChecklistModal);
+        });
+
+        confirmSaveQuickChecklistBtn.addEventListener('click', () => {
+            const quickChecklistContent = quickChecklist.value.trim();
+            const newItems = quickChecklistContent.split('\n').filter(item => item.trim() !== '');
+            const selectedChecklists = document.querySelectorAll('#checklistTitlesList .note-item.selected');
+            
+            if (selectedChecklists.length === 0) {
+                alert('Please select at least one checklist to add the quick checklist items to');
+                return;
+            }
+            
+            selectedChecklists.forEach(checklistItem => {
+                const checklistId = checklistItem.dataset.id;
+                const checklist = checklists.find(c => c.id === checklistId);
+                if (checklist) {
+                    const currentItems = [...checklist.items];
+                    const maxId = currentItems.length > 0 ? Math.max(...currentItems.map(item => item.id)) : -1;
+                    
+                    newItems.forEach((item, index) => {
+                        currentItems.push({
+                            id: maxId + index + 1,
+                            text: item.trim(),
+                            completed: false
+                        });
+                    });
+                    
+                    checklist.items = currentItems;
+                }
+            });
+            
+            quickChecklist.value = '';
+            quickChecklistActions.classList.add('hidden');
+            closeModal(saveQuickChecklistModal);
+            alert('Quick checklist items saved successfully!');
+            renderChecklists();
+        });
+
+        // Render Functions
+        function loadUserData() {
+            renderNotes();
+            renderChecklists();
+        }
+
+        function renderNotes() {
+            notesList.innerHTML = '';
+            
+            if (notes.length === 0) {
+                notesList.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-edit"></i>
+                        <h3>No notes yet</h3>
+                        <p>Create your first note to get started</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            notes.forEach(note => {
+                const noteElement = document.createElement('div');
+                noteElement.className = 'note-item';
+                noteElement.innerHTML = `
+                    <h4>${note.title}</h4>
+                    <p>${note.content.substring(0, 100)}${note.content.length > 100 ? '...' : ''}</p>
+                    <small>${new Date(note.createdAt).toLocaleDateString()}</small>
+                `;
+                
+                notesList.appendChild(noteElement);
+            });
+        }
+
+        function renderChecklists() {
+            checklistsList.innerHTML = '';
+            
+            if (checklists.length === 0) {
+                checklistsList.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-check-square"></i>
+                        <h3>No checklists yet</h3>
+                        <p>Create your first checklist to get started</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            checklists.forEach(checklist => {
+                const checklistElement = document.createElement('div');
+                checklistElement.className = 'card';
+                checklistElement.innerHTML = `
+                    <div class="card-header">
+                        <h4>${checklist.title}</h4>
+                        <small>${new Date(checklist.createdAt).toLocaleDateString()}</small>
+                    </div>
+                    <div class="checklist-items" id="checklist-${checklist.id}">
+                        ${checklist.items.map(item => `
+                            <div class="checklist-item" data-id="${item.id}">
+                                <input type="checkbox" ${item.completed ? 'checked' : ''}>
+                                <span class="${item.completed ? 'completed' : ''}">${item.text}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                
+                // Add checkbox change listeners
+                const checklistItemsContainer = checklistElement.querySelector(`#checklist-${checklist.id}`);
+                checklistItemsContainer.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+                    checkbox.addEventListener('change', function() {
+                        const itemId = parseInt(this.closest('.checklist-item').dataset.id);
+                        const itemText = this.nextElementSibling;
+                        
+                        if (this.checked) {
+                            itemText.classList.add('completed');
+                        } else {
+                            itemText.classList.remove('completed');
+                        }
+                        
+                        // Update the checklist data
+                        const checklistItem = checklists.find(c => c.id === checklist.id);
+                        if (checklistItem) {
+                            const item = checklistItem.items.find(i => i.id === itemId);
+                            if (item) {
+                                item.completed = this.checked;
+                            }
+                        }
+                    });
+                });
+                
+                checklistsList.appendChild(checklistElement);
+            });
+        }
+    </script>
+</body>
+</html>
