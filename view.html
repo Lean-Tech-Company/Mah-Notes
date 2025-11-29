@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Notes - My Notes</title>
+    <style>
+        :root {
+            --primary: #4a6fa5;
+            --secondary: #6b8cbc;
+            --accent: #ff7e5f;
+            --light: #f5f7fa;
+            --dark: #2c3e50;
+            --border-radius: 12px;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background-color: white;
+            padding: 15px 0;
+            box-shadow: var(--shadow);
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--secondary);
+        }
+
+        .btn-accent {
+            background-color: var(--accent);
+            color: white;
+        }
+
+        .btn-accent:hover {
+            background-color: #ff9a7f;
+        }
+
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tab.active {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .content {
+            display: none;
+        }
+
+        .content.active {
+            display: block;
+        }
+
+        .card {
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 20px;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .notes-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .note-item {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            border-left: 4px solid var(--primary);
+        }
+
+        .note-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .checkbox-item.checked {
+            text-decoration: line-through;
+            color: #888;
+        }
+
+        @media (max-width: 768px) {
+            .notes-list {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="logo">My Notes</div>
+            <div class="nav-buttons">
+                <button class="btn btn-primary" id="back-btn">Back to App</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="tabs">
+            <div class="tab active" data-tab="notes">Notes</div>
+            <div class="tab" data-tab="checklists">Checklists</div>
+        </div>
+
+        <div class="content active" id="notes-content">
+            <div class="notes-list" id="notes-list">
+                <!-- Notes will be dynamically added here -->
+            </div>
+        </div>
+
+        <div class="content" id="checklists-content">
+            <div class="notes-list" id="checklists-list">
+                <!-- Checklists will be dynamically added here -->
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDMrMvCn6ne2uSTxgS6yXIAjTdXSuSXHf4",
+            authDomain: "leantech-e68b9.firebaseapp.com",
+            projectId: "leantech-e68b9",
+            storageBucket: "leantech-e68b9.firebasestorage.app",
+            messagingSenderId: "616420896816",
+            appId: "1:616420896816:web:e86f387a55e07e1b627df5"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+        const auth = getAuth(app);
+
+        // Check if user is logged in
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // User is signed in
+                loadUserData(user.uid);
+            } else {
+                // User is signed out, redirect to login page
+                window.location.href = 'login.html';
+            }
+        });
+
+        // Load user data from Firebase
+        function loadUserData(userId) {
+            const notesRef = ref(database, 'users/' + userId + '/notes');
+            onValue(notesRef, (snapshot) => {
+                const notes = snapshot.val();
+                displayNotes(notes);
+            });
+
+            const checklistsRef = ref(database, 'users/' + userId + '/checklists');
+            onValue(checklistsRef, (snapshot) => {
+                const checklists = snapshot.val();
+                displayChecklists(checklists);
+            });
+        }
+
+        // Display notes in the UI
+        function displayNotes(notes) {
+            const notesList = document.getElementById('notes-list');
+            notesList.innerHTML = '';
+
+            if (!notes) {
+                notesList.innerHTML = '<p>No notes yet.</p>';
+                return;
+            }
+
+            Object.keys(notes).forEach(key => {
+                const note = notes[key];
+                const noteElement = document.createElement('div');
+                noteElement.className = 'note-item';
+                noteElement.innerHTML = `
+                    <div class="note-title">${note.title}</div>
+                    <div class="note-content">${note.content}</div>
+                `;
+                notesList.appendChild(noteElement);
+            });
+        }
+
+        // Display checklists in the UI
+        function displayChecklists(checklists) {
+            const checklistsList = document.getElementById('checklists-list');
+            checklistsList.innerHTML = '';
+
+            if (!checklists) {
+                checklistsList.innerHTML = '<p>No checklists yet.</p>';
+                return;
+            }
+
+            Object.keys(checklists).forEach(key => {
+                const checklist = checklists[key];
+                const checklistElement = document.createElement('div');
+                checklistElement.className = 'note-item';
+                checklistElement.innerHTML = `
+                    <div class="note-title">${checklist.title}</div>
+                    <div class="checkbox-list">
+                        ${checklist.items.map(item => `
+                            <div class="checkbox-item ${item.checked ? 'checked' : ''}">
+                                <span>${item.text}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                checklistsList.appendChild(checklistElement);
+            });
+        }
+
+        // Tab functionality
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                // Remove active class from all tabs and content
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+                
+                // Add active class to clicked tab and corresponding content
+                tab.classList.add('active');
+                document.getElementById(`${tab.getAttribute('data-tab')}-content`).classList.add('active');
+            });
+        });
+
+        // Back button functionality
+        document.getElementById('back-btn').addEventListener('click', () => {
+            window.location.href = 'index.html';
+        });
+    </script>
+</body>
+</html>
