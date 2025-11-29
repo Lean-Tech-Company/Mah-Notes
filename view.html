@@ -132,6 +132,7 @@
             padding: 12px 15px;
             border-bottom: 1px solid #eee;
             transition: var(--transition);
+            position: relative;
         }
 
         .checkbox-item:hover {
@@ -145,9 +146,19 @@
         }
 
         .checkbox-item.checked {
-            text-decoration: line-through;
             color: #888;
-            background-color: #f0f8f0;
+            background-color: #f8f9fa;
+        }
+
+        .checkbox-item.checked .item-text {
+            text-decoration: line-through;
+            text-decoration-thickness: 2px;
+            text-decoration-color: var(--primary);
+        }
+
+        .item-text {
+            flex: 1;
+            transition: var(--transition);
         }
 
         .empty-state {
@@ -201,9 +212,73 @@
         .notification.error {
             background-color: var(--danger);
         }
+
+        /* Loader Styles */
+        .loader {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.8);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .loader.active {
+            display: flex;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+
+        .loader-text {
+            color: var(--dark);
+            font-weight: 600;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .saving-indicator {
+            position: absolute;
+            right: 15px;
+            color: var(--success);
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .saving-indicator.show {
+            opacity: 1;
+            animation: pulse 1s ease;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
     </style>
 </head>
 <body>
+    <!-- Loader -->
+    <div class="loader" id="loader">
+        <div class="spinner"></div>
+        <div class="loader-text">Saving...</div>
+    </div>
+
     <header>
         <div class="header-content">
             <div class="logo">
@@ -271,7 +346,7 @@
             onValue(itemRef, (snapshot) => {
                 const item = snapshot.val();
                 if (item) {
-                    displayItem(item, itemType, itemId);
+                    displayItem(item, itemType, itemId, userId);
                 } else {
                     showItemNotFound();
                 }
@@ -279,7 +354,7 @@
         }
 
         // Display the specific item
-        function displayItem(item, itemType, itemId) {
+        function displayItem(item, itemType, itemId, userId) {
             const contentArea = document.getElementById('content-area');
             
             if (itemType === 'note') {
@@ -297,7 +372,8 @@
                             ${item.items.map((item, index) => `
                                 <div class="checkbox-item ${item.checked ? 'checked' : ''}" data-index="${index}">
                                     <input type="checkbox" ${item.checked ? 'checked' : ''}>
-                                    <span>${item.text}</span>
+                                    <span class="item-text">${item.text}</span>
+                                    <i class="fas fa-check saving-indicator"></i>
                                 </div>
                             `).join('')}
                         </div>
@@ -308,28 +384,82 @@
                 const checklistContainer = document.getElementById('checklist-items');
                 checklistContainer.querySelectorAll('.checkbox-item').forEach(item => {
                     const checkbox = item.querySelector('input[type="checkbox"]');
-                    checkbox.addEventListener('change', () => {
+                    const savingIndicator = item.querySelector('.saving-indicator');
+                    
+                    checkbox.addEventListener('change', async () => {
                         const itemIndex = parseInt(item.getAttribute('data-index'));
-                        toggleChecklistItem(itemId, itemIndex, checkbox.checked, auth.currentUser.uid);
+                        const isChecked = checkbox.checked;
+                        
+                        // Update UI immediately
+                        item.classList.toggle('checked', isChecked);
+                        
+                        // Show saving indicator
+                        savingIndicator.classList.add('show');
+                        
+                        // Show loader
+                        showLoader();
+                        
+                        try {
+                            // Save to Firebase - FIXED: Use set instead of update for boolean values
+                            await toggleChecklistItem(itemId, itemIndex, isChecked, userId);
+                            
+                            // Hide saving indicator after a delay
+                            setTimeout(() => {
+                                savingIndicator.classList.remove('show');
+                            }, 1000);
+                            
+                            showNotification('Checklist updated!', 'success');
+                        } catch (error) {
+                            console.error('Save error:', error);
+                            // Revert UI if save fails
+                            checkbox.checked = !isChecked;
+                            item.classList.toggle('checked', !isChecked);
+                            showNotification('Failed to save changes: ' + error.message, 'error');
+                        } finally {
+                            // Hide loader
+                            hideLoader();
+                        }
                     });
                 });
             }
         }
 
-        // Toggle checklist item status in view mode
+        // Toggle checklist item status in view mode - FIXED VERSION
         function toggleChecklistItem(checklistId, itemIndex, isChecked, userId) {
-            const itemRef = ref(database, `users/${userId}/checklists/${checklistId}/items/${itemIndex}/checked`);
-            update(itemRef, isChecked);
-            
-            // Update UI immediately
-            const checklistItems = document.querySelectorAll('.checkbox-item');
-            checklistItems[itemIndex].classList.toggle('checked', isChecked);
-            
-            showNotification('Checklist updated!', 'success');
+            return new Promise((resolve, reject) => {
+                try {
+                    const itemRef = ref(database, `users/${userId}/checklists/${checklistId}/items/${itemIndex}`);
+                    
+                    // Update the entire item to ensure proper structure
+                    update(itemRef, {
+                        checked: isChecked
+                    }).then(() => {
+                        resolve();
+                    }).catch(error => {
+                        reject(error);
+                    });
+                } catch (error) {
+                    reject(error);
+                }
+            });
+        }
+
+        // Show loader
+        function showLoader() {
+            document.getElementById('loader').classList.add('active');
+        }
+
+        // Hide loader
+        function hideLoader() {
+            document.getElementById('loader').classList.remove('active');
         }
 
         // Show notification
         function showNotification(message, type) {
+            // Remove any existing notifications first
+            const existingNotifications = document.querySelectorAll('.notification');
+            existingNotifications.forEach(notification => notification.remove());
+            
             const notification = document.createElement('div');
             notification.className = `notification ${type}`;
             notification.textContent = message;
@@ -337,8 +467,10 @@
             document.body.appendChild(notification);
             
             setTimeout(() => {
-                notification.remove();
-            }, 2000);
+                if (notification.parentNode) {
+                    notification.remove();
+                }
+            }, 3000);
         }
 
         // Show message when no item is selected
