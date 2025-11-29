@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Notes</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
             --primary: #4a6fa5;
@@ -13,8 +14,10 @@
             --dark: #2c3e50;
             --success: #2ecc71;
             --danger: #e74c3c;
+            --warning: #f39c12;
             --border-radius: 12px;
             --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
         }
 
         * {
@@ -55,6 +58,13 @@
             font-size: 24px;
             font-weight: bold;
             color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo i {
+            font-size: 28px;
         }
 
         .user-info {
@@ -93,6 +103,12 @@
             box-shadow: var(--shadow);
             padding: 20px;
             margin-bottom: 20px;
+            transition: var(--transition);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
         }
 
         .card-header {
@@ -113,7 +129,10 @@
             border-radius: 30px;
             cursor: pointer;
             font-weight: 600;
-            transition: all 0.3s ease;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .btn-primary {
@@ -139,9 +158,26 @@
             color: white;
         }
 
+        .btn-success:hover {
+            background-color: #27ae60;
+        }
+
         .btn-danger {
             background-color: var(--danger);
             color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #c0392b;
+        }
+
+        .btn-warning {
+            background-color: var(--warning);
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background-color: #e67e22;
         }
 
         .text-area {
@@ -150,15 +186,45 @@
             border: 1px solid #ddd;
             border-radius: var(--border-radius);
             resize: vertical;
-            min-height: 120px;
+            min-height: 150px;
             font-size: 16px;
+            transition: var(--transition);
         }
 
-        .quick-notes-actions {
+        .text-area:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(74, 111, 165, 0.2);
+        }
+
+        .quick-entry-actions {
             display: flex;
             gap: 10px;
             margin-top: 10px;
             justify-content: flex-end;
+        }
+
+        .type-toggle {
+            display: flex;
+            background-color: #f0f5ff;
+            border-radius: var(--border-radius);
+            padding: 5px;
+            margin-bottom: 15px;
+        }
+
+        .type-option {
+            flex: 1;
+            padding: 10px 15px;
+            text-align: center;
+            cursor: pointer;
+            border-radius: calc(var(--border-radius) - 5px);
+            transition: var(--transition);
+            font-weight: 600;
+        }
+
+        .type-option.active {
+            background-color: var(--primary);
+            color: white;
         }
 
         .modal {
@@ -172,6 +238,12 @@
             z-index: 1000;
             align-items: center;
             justify-content: center;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
 
         .modal-content {
@@ -182,6 +254,13 @@
             max-width: 500px;
             max-height: 80vh;
             overflow-y: auto;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
         }
 
         .modal-header {
@@ -202,6 +281,11 @@
             font-size: 24px;
             cursor: pointer;
             color: var(--dark);
+            transition: var(--transition);
+        }
+
+        .close-modal:hover {
+            color: var(--danger);
         }
 
         .checkbox-list {
@@ -214,11 +298,17 @@
             padding: 10px;
             border-bottom: 1px solid #eee;
             cursor: move;
+            transition: var(--transition);
+        }
+
+        .checkbox-item:hover {
+            background-color: #f9f9f9;
         }
 
         .checkbox-item input[type="checkbox"] {
             margin-right: 10px;
             transform: scale(1.2);
+            cursor: pointer;
         }
 
         .checkbox-item.checked {
@@ -242,6 +332,13 @@
             border: 1px solid #ddd;
             border-radius: var(--border-radius);
             font-size: 16px;
+            transition: var(--transition);
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(74, 111, 165, 0.2);
         }
 
         .notes-list {
@@ -254,6 +351,11 @@
             border-radius: var(--border-radius);
             margin-bottom: 10px;
             border-left: 4px solid var(--primary);
+            transition: var(--transition);
+        }
+
+        .note-item:hover {
+            background-color: #f0f5ff;
         }
 
         .note-title {
@@ -274,6 +376,13 @@
             cursor: pointer;
             color: var(--primary);
             font-size: 14px;
+            transition: var(--transition);
+            padding: 5px;
+            border-radius: 4px;
+        }
+
+        .action-btn:hover {
+            background-color: rgba(74, 111, 165, 0.1);
         }
 
         .reusable-options {
@@ -299,23 +408,107 @@
             background-color: #e0e7ff;
             border-radius: 20px;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: var(--transition);
         }
 
         .day-checkbox:checked + .day-label {
             background-color: var(--primary);
             color: white;
         }
+
+        .empty-state {
+            text-align: center;
+            padding: 30px;
+            color: #777;
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 15px;
+            color: #ddd;
+        }
+
+        .drag-handle {
+            cursor: move;
+            margin-right: 10px;
+            color: #aaa;
+        }
+
+        .sortable-ghost {
+            opacity: 0.4;
+        }
+
+        .sortable-chosen {
+            background-color: #f0f5ff;
+        }
+
+        .view-btn {
+            background-color: var(--warning);
+            color: white;
+        }
+
+        .view-btn:hover {
+            background-color: #e67e22;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: var(--border-radius);
+            color: white;
+            font-weight: 600;
+            z-index: 1100;
+            box-shadow: var(--shadow);
+            animation: slideInRight 0.3s ease;
+        }
+
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .notification.success {
+            background-color: var(--success);
+        }
+
+        .notification.error {
+            background-color: var(--danger);
+        }
+
+        .notification.info {
+            background-color: var(--primary);
+        }
+
+        .placeholder-text {
+            color: #999;
+            font-style: italic;
+            margin-top: 8px;
+            font-size: 14px;
+        }
+
+        .placeholder-text i {
+            margin-right: 5px;
+        }
     </style>
 </head>
 <body>
     <header>
         <div class="header-content">
-            <div class="logo">My Notes</div>
+            <div class="logo">
+                <i class="fas fa-sticky-note"></i>
+                My Notes
+            </div>
             <div class="user-info">
                 <div class="user-avatar">U</div>
                 <span id="user-name">User</span>
-                <button class="btn btn-danger" id="logout-btn">Logout</button>
+                <button class="btn btn-warning" id="view-page-btn">
+                    <i class="fas fa-eye"></i> View Page
+                </button>
+                <button class="btn btn-danger" id="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
             </div>
         </div>
     </header>
@@ -326,19 +519,12 @@
                 <div class="card">
                     <div class="card-header">
                         <h2 class="card-title">Take Notes</h2>
-                        <button class="btn btn-primary" id="new-note-btn">New Note</button>
+                        <button class="btn btn-primary" id="new-note-btn">
+                            <i class="fas fa-plus"></i> New Note
+                        </button>
                     </div>
                     <div class="notes-list" id="notes-list">
                         <!-- Notes will be dynamically added here -->
-                    </div>
-                </div>
-
-                <div class="card">
-                    <h2 class="card-title">Quick Notes</h2>
-                    <textarea class="text-area" id="quick-note-text" placeholder="Type your quick note here..."></textarea>
-                    <div class="quick-notes-actions" id="quick-notes-actions" style="display: none;">
-                        <button class="btn btn-success" id="save-quick-note">Save</button>
-                        <button class="btn btn-danger" id="discard-quick-note">Discard</button>
                     </div>
                 </div>
             </div>
@@ -347,21 +533,47 @@
                 <div class="card">
                     <div class="card-header">
                         <h2 class="card-title">Checklists</h2>
-                        <button class="btn btn-accent" id="new-checklist-btn">New Checklist</button>
+                        <button class="btn btn-accent" id="new-checklist-btn">
+                            <i class="fas fa-plus"></i> New Checklist
+                        </button>
                     </div>
                     <div class="notes-list" id="checklists-list">
                         <!-- Checklists will be dynamically added here -->
                     </div>
                 </div>
+            </div>
+        </div>
 
-                <div class="card">
-                    <h2 class="card-title">Quick Checklist</h2>
-                    <textarea class="text-area" id="quick-checklist-text" placeholder="Type your quick checklist items here (one per line)..."></textarea>
-                    <div class="quick-notes-actions" id="quick-checklist-actions" style="display: none;">
-                        <button class="btn btn-success" id="save-quick-checklist">Save</button>
-                        <button class="btn btn-danger" id="discard-quick-checklist">Discard</button>
-                    </div>
+        <!-- Single Quick Entry Card -->
+        <div class="card">
+            <h2 class="card-title">Quick Entry</h2>
+            
+            <!-- Type Toggle -->
+            <div class="type-toggle">
+                <div class="type-option active" data-type="note">
+                    <i class="fas fa-sticky-note"></i> Note
                 </div>
+                <div class="type-option" data-type="checklist">
+                    <i class="fas fa-list-check"></i> Checklist
+                </div>
+            </div>
+            
+            <!-- Single Text Area -->
+            <textarea class="text-area" id="quick-entry-text" placeholder="Type your content here..."></textarea>
+            
+            <!-- Dynamic Placeholder Text -->
+            <div id="placeholder-info" class="placeholder-text">
+                <i class="fas fa-info-circle"></i> 
+                <span id="placeholder-text">Enter your note content...</span>
+            </div>
+            
+            <div class="quick-entry-actions" id="quick-entry-actions" style="display: none;">
+                <button class="btn btn-success" id="save-quick-entry">
+                    <i class="fas fa-save"></i> Save
+                </button>
+                <button class="btn btn-danger" id="discard-quick-entry">
+                    <i class="fas fa-trash"></i> Discard
+                </button>
             </div>
         </div>
     </div>
@@ -382,7 +594,9 @@
                 <textarea class="form-input" id="note-content" rows="6" placeholder="Enter your note content"></textarea>
             </div>
             <div class="form-group">
-                <button class="btn btn-primary" id="save-note">Save Note</button>
+                <button class="btn btn-primary" id="save-note">
+                    <i class="fas fa-save"></i> Save Note
+                </button>
             </div>
         </div>
     </div>
@@ -446,12 +660,14 @@
                 </div>
             </div>
             <div class="form-group">
-                <button class="btn btn-accent" id="save-checklist">Save Checklist</button>
+                <button class="btn btn-accent" id="save-checklist">
+                    <i class="fas fa-save"></i> Save Checklist
+                </button>
             </div>
         </div>
     </div>
 
-    <!-- Modal for saving quick notes/checklists -->
+    <!-- Modal for saving quick entries -->
     <div class="modal" id="save-quick-modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -465,7 +681,9 @@
                 </div>
             </div>
             <div class="form-group">
-                <button class="btn btn-success" id="confirm-save-quick">Save</button>
+                <button class="btn btn-success" id="confirm-save-quick">
+                    <i class="fas fa-save"></i> Save
+                </button>
             </div>
         </div>
     </div>
@@ -491,6 +709,9 @@
         const database = getDatabase(app);
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
+
+        // Current quick entry type
+        let currentQuickType = 'note';
 
         // Check if user is logged in
         onAuthStateChanged(auth, (user) => {
@@ -519,13 +740,53 @@
             });
         }
 
+        // Initialize type toggle
+        function initializeTypeToggle() {
+            const typeOptions = document.querySelectorAll('.type-option');
+            
+            typeOptions.forEach(option => {
+                option.addEventListener('click', () => {
+                    // Remove active class from all options
+                    typeOptions.forEach(opt => opt.classList.remove('active'));
+                    
+                    // Add active class to clicked option
+                    option.classList.add('active');
+                    
+                    // Update current type
+                    currentQuickType = option.getAttribute('data-type');
+                    
+                    // Update placeholder text
+                    updatePlaceholderText();
+                });
+            });
+        }
+
+        // Update placeholder text based on current type
+        function updatePlaceholderText() {
+            const textarea = document.getElementById('quick-entry-text');
+            const placeholderText = document.getElementById('placeholder-text');
+            
+            if (currentQuickType === 'note') {
+                textarea.placeholder = 'Type your note content here...';
+                placeholderText.textContent = 'Enter your note content...';
+            } else {
+                textarea.placeholder = 'Type your checklist items here (one per line)...';
+                placeholderText.textContent = 'Enter checklist items, one per line. Each line will become a checklist item.';
+            }
+        }
+
         // Display notes in the UI
         function displayNotes(notes) {
             const notesList = document.getElementById('notes-list');
             notesList.innerHTML = '';
 
             if (!notes) {
-                notesList.innerHTML = '<p>No notes yet. Create your first note!</p>';
+                notesList.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-sticky-note"></i>
+                        <p>No notes yet. Create your first note!</p>
+                    </div>
+                `;
                 return;
             }
 
@@ -537,8 +798,15 @@
                     <div class="note-title">
                         <span>${note.title}</span>
                         <div class="note-actions">
-                            <button class="action-btn edit-note" data-id="${key}">Edit</button>
-                            <button class="action-btn delete-note" data-id="${key}">Delete</button>
+                            <button class="action-btn view-btn" data-id="${key}" data-type="note">
+                                <i class="fas fa-eye"></i> View
+                            </button>
+                            <button class="action-btn edit-note" data-id="${key}">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                            <button class="action-btn delete-note" data-id="${key}">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
                         </div>
                     </div>
                     <div class="note-content">${note.content}</div>
@@ -549,15 +817,26 @@
             // Add event listeners for edit and delete buttons
             document.querySelectorAll('.edit-note').forEach(button => {
                 button.addEventListener('click', (e) => {
-                    const noteId = e.target.getAttribute('data-id');
+                    const noteId = e.target.closest('.action-btn').getAttribute('data-id');
                     editNote(noteId, notes[noteId]);
                 });
             });
 
             document.querySelectorAll('.delete-note').forEach(button => {
                 button.addEventListener('click', (e) => {
-                    const noteId = e.target.getAttribute('data-id');
+                    const noteId = e.target.closest('.action-btn').getAttribute('data-id');
                     deleteNote(noteId);
+                });
+            });
+
+            // Add event listeners for view buttons
+            document.querySelectorAll('.view-btn').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const itemId = e.target.closest('.action-btn').getAttribute('data-id');
+                    const itemType = e.target.closest('.action-btn').getAttribute('data-type');
+                    localStorage.setItem('viewItemId', itemId);
+                    localStorage.setItem('viewItemType', itemType);
+                    window.location.href = 'view.html';
                 });
             });
         }
@@ -568,7 +847,12 @@
             checklistsList.innerHTML = '';
 
             if (!checklists) {
-                checklistsList.innerHTML = '<p>No checklists yet. Create your first checklist!</p>';
+                checklistsList.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-list-check"></i>
+                        <p>No checklists yet. Create your first checklist!</p>
+                    </div>
+                `;
                 return;
             }
 
@@ -580,13 +864,21 @@
                     <div class="note-title">
                         <span>${checklist.title}</span>
                         <div class="note-actions">
-                            <button class="action-btn edit-checklist" data-id="${key}">Edit</button>
-                            <button class="action-btn delete-checklist" data-id="${key}">Delete</button>
+                            <button class="action-btn view-btn" data-id="${key}" data-type="checklist">
+                                <i class="fas fa-eye"></i> View
+                            </button>
+                            <button class="action-btn edit-checklist" data-id="${key}">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                            <button class="action-btn delete-checklist" data-id="${key}">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
                         </div>
                     </div>
                     <div class="checkbox-list" id="checklist-${key}">
                         ${checklist.items.map((item, index) => `
                             <div class="checkbox-item ${item.checked ? 'checked' : ''}" draggable="true" data-index="${index}">
+                                <i class="fas fa-grip-lines drag-handle"></i>
                                 <input type="checkbox" ${item.checked ? 'checked' : ''}>
                                 <span>${item.text}</span>
                             </div>
@@ -615,15 +907,26 @@
             // Add event listeners for edit and delete buttons
             document.querySelectorAll('.edit-checklist').forEach(button => {
                 button.addEventListener('click', (e) => {
-                    const checklistId = e.target.getAttribute('data-id');
+                    const checklistId = e.target.closest('.action-btn').getAttribute('data-id');
                     editChecklist(checklistId, checklists[checklistId]);
                 });
             });
 
             document.querySelectorAll('.delete-checklist').forEach(button => {
                 button.addEventListener('click', (e) => {
-                    const checklistId = e.target.getAttribute('data-id');
+                    const checklistId = e.target.closest('.action-btn').getAttribute('data-id');
                     deleteChecklist(checklistId);
+                });
+            });
+
+            // Add event listeners for view buttons
+            document.querySelectorAll('.view-btn').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const itemId = e.target.closest('.action-btn').getAttribute('data-id');
+                    const itemType = e.target.closest('.action-btn').getAttribute('data-type');
+                    localStorage.setItem('viewItemId', itemId);
+                    localStorage.setItem('viewItemType', itemType);
+                    window.location.href = 'view.html';
                 });
             });
         }
@@ -635,7 +938,8 @@
             draggedItem = this;
             e.dataTransfer.effectAllowed = 'move';
             e.dataTransfer.setData('text/html', this.innerHTML);
-            this.style.opacity = '0.4';
+            this.classList.add('sortable-chosen');
+            setTimeout(() => this.style.opacity = '0.4', 0);
         }
 
         function handleDragOver(e) {
@@ -658,6 +962,7 @@
         }
 
         function handleDragEnd(e) {
+            this.classList.remove('sortable-chosen');
             this.style.opacity = '1';
         }
 
@@ -676,6 +981,7 @@
             
             // Update in Firebase
             update(checklistRef, { items });
+            showNotification('Checklist order updated!', 'success');
         }
 
         // Toggle checklist item status
@@ -703,8 +1009,9 @@
                 document.getElementById('note-modal').style.display = 'none';
                 document.getElementById('note-title').value = '';
                 document.getElementById('note-content').value = '';
+                showNotification('Note saved successfully!', 'success');
             } else {
-                alert('Please fill in both title and content');
+                showNotification('Please fill in both title and content', 'error');
             }
         });
 
@@ -728,6 +1035,7 @@
             // Change save button to update
             const saveButton = document.getElementById('save-note');
             saveButton.textContent = 'Update Note';
+            saveButton.innerHTML = '<i class="fas fa-save"></i> Update Note';
             saveButton.onclick = () => {
                 const title = document.getElementById('note-title').value;
                 const content = document.getElementById('note-content').value;
@@ -738,9 +1046,11 @@
                     document.getElementById('note-title').value = '';
                     document.getElementById('note-content').value = '';
                     saveButton.textContent = 'Save Note';
+                    saveButton.innerHTML = '<i class="fas fa-save"></i> Save Note';
                     saveButton.onclick = saveNote;
+                    showNotification('Note updated successfully!', 'success');
                 } else {
-                    alert('Please fill in both title and content');
+                    showNotification('Please fill in both title and content', 'error');
                 }
             };
         }
@@ -761,6 +1071,7 @@
                 const userId = auth.currentUser.uid;
                 const noteRef = ref(database, `users/${userId}/notes/${noteId}`);
                 remove(noteRef);
+                showNotification('Note deleted successfully!', 'success');
             }
         }
 
@@ -814,8 +1125,9 @@
                 document.getElementById('checklist-modal').style.display = 'none';
                 document.getElementById('checklist-title').value = '';
                 document.getElementById('checklist-items').value = '';
+                showNotification('Checklist saved successfully!', 'success');
             } else {
-                alert('Please fill in both title and items');
+                showNotification('Please fill in both title and items', 'error');
             }
         });
 
@@ -861,6 +1173,7 @@
             // Change save button to update
             const saveButton = document.getElementById('save-checklist');
             saveButton.textContent = 'Update Checklist';
+            saveButton.innerHTML = '<i class="fas fa-save"></i> Update Checklist';
             saveButton.onclick = () => {
                 const title = document.getElementById('checklist-title').value;
                 const itemsText = document.getElementById('checklist-items').value;
@@ -891,9 +1204,11 @@
                     document.getElementById('checklist-title').value = '';
                     document.getElementById('checklist-items').value = '';
                     saveButton.textContent = 'Save Checklist';
+                    saveButton.innerHTML = '<i class="fas fa-save"></i> Save Checklist';
                     saveButton.onclick = saveChecklist;
+                    showNotification('Checklist updated successfully!', 'success');
                 } else {
-                    alert('Please fill in both title and items');
+                    showNotification('Please fill in both title and items', 'error');
                 }
             };
         }
@@ -916,54 +1231,36 @@
                 const userId = auth.currentUser.uid;
                 const checklistRef = ref(database, `users/${userId}/checklists/${checklistId}`);
                 remove(checklistRef);
+                showNotification('Checklist deleted successfully!', 'success');
             }
         }
 
-        // Quick notes functionality
-        const quickNoteText = document.getElementById('quick-note-text');
-        const quickNoteActions = document.getElementById('quick-notes-actions');
+        // Quick entry functionality
+        const quickEntryText = document.getElementById('quick-entry-text');
+        const quickEntryActions = document.getElementById('quick-entry-actions');
 
-        quickNoteText.addEventListener('input', () => {
-            if (quickNoteText.value.trim() !== '') {
-                quickNoteActions.style.display = 'flex';
+        quickEntryText.addEventListener('input', () => {
+            if (quickEntryText.value.trim() !== '') {
+                quickEntryActions.style.display = 'flex';
             } else {
-                quickNoteActions.style.display = 'none';
+                quickEntryActions.style.display = 'none';
             }
         });
 
-        document.getElementById('discard-quick-note').addEventListener('click', () => {
-            quickNoteText.value = '';
-            quickNoteActions.style.display = 'none';
+        document.getElementById('discard-quick-entry').addEventListener('click', () => {
+            quickEntryText.value = '';
+            quickEntryActions.style.display = 'none';
         });
 
-        document.getElementById('save-quick-note').addEventListener('click', () => {
-            if (quickNoteText.value.trim() !== '') {
-                showSaveQuickModal('note', quickNoteText.value);
+        document.getElementById('save-quick-entry').addEventListener('click', () => {
+            if (quickEntryText.value.trim() !== '') {
+                showSaveQuickModal(currentQuickType, quickEntryText.value);
             }
         });
 
-        // Quick checklist functionality
-        const quickChecklistText = document.getElementById('quick-checklist-text');
-        const quickChecklistActions = document.getElementById('quick-checklist-actions');
-
-        quickChecklistText.addEventListener('input', () => {
-            if (quickChecklistText.value.trim() !== '') {
-                quickChecklistActions.style.display = 'flex';
-            } else {
-                quickChecklistActions.style.display = 'none';
-            }
-        });
-
-        document.getElementById('discard-quick-checklist').addEventListener('click', () => {
-            quickChecklistText.value = '';
-            quickChecklistActions.style.display = 'none';
-        });
-
-        document.getElementById('save-quick-checklist').addEventListener('click', () => {
-            if (quickChecklistText.value.trim() !== '') {
-                showSaveQuickModal('checklist', quickChecklistText.value);
-            }
-        });
+        // Initialize type toggle on page load
+        initializeTypeToggle();
+        updatePlaceholderText();
 
         // Show modal for saving quick entries
         function showSaveQuickModal(type, content) {
@@ -991,15 +1288,17 @@
                         const label = document.createElement('label');
                         label.htmlFor = `dest-${key}`;
                         label.textContent = item.title;
+                        label.style.marginLeft = '8px';
                         
                         const div = document.createElement('div');
+                        div.style.marginBottom = '10px';
                         div.appendChild(checkbox);
                         div.appendChild(label);
                         
                         destinationList.appendChild(div);
                     });
                 } else {
-                    destinationList.innerHTML = '<p>No existing ' + (type === 'note' ? 'notes' : 'checklists') + ' found.</p>';
+                    destinationList.innerHTML = `<p>No existing ${type === 'note' ? 'notes' : 'checklists'} found. Create one first!</p>`;
                 }
                 
                 // Show the modal
@@ -1015,15 +1314,12 @@
                         modal.style.display = 'none';
                         
                         // Clear the quick input
-                        if (type === 'note') {
-                            quickNoteText.value = '';
-                            quickNoteActions.style.display = 'none';
-                        } else {
-                            quickChecklistText.value = '';
-                            quickChecklistActions.style.display = 'none';
-                        }
+                        quickEntryText.value = '';
+                        quickEntryActions.style.display = 'none';
+                        
+                        showNotification('Quick entry saved successfully!', 'success');
                     } else {
-                        alert('Please select at least one destination');
+                        showNotification('Please select at least one destination', 'error');
                     }
                 };
             }, { onlyOnce: true });
@@ -1071,14 +1367,33 @@
             });
         }
 
+        // View page button
+        document.getElementById('view-page-btn').addEventListener('click', () => {
+            window.location.href = 'view.html';
+        });
+
         // Logout functionality
         document.getElementById('logout-btn').addEventListener('click', () => {
             signOut(auth).then(() => {
                 window.location.href = 'login.html';
             }).catch((error) => {
                 console.error('Logout error:', error);
+                showNotification('Error during logout', 'error');
             });
         });
+
+        // Notification function
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
     </script>
 </body>
 </html>
