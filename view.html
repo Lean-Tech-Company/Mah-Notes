@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>View - My Notes</title>
+    <link rel="icon" type="image/x-icon" href="images/icon.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -36,44 +37,46 @@
         .container {
             max-width: 800px;
             margin: 0 auto;
-            padding: 20px;
+            padding: 15px;
         }
 
         header {
             background-color: white;
-            padding: 15px 0;
+            padding: 12px 0;
             box-shadow: var(--shadow);
             border-radius: var(--border-radius);
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
 
         .header-content {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 0 20px;
+            padding: 0 15px;
+            flex-wrap: wrap;
+            gap: 10px;
         }
 
         .logo {
-            font-size: 24px;
+            font-size: 20px;
             font-weight: bold;
             color: var(--primary);
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
         }
 
         .logo i {
-            font-size: 28px;
+            font-size: 24px;
         }
 
         .nav-buttons {
             display: flex;
-            gap: 10px;
+            gap: 8px;
         }
 
         .btn {
-            padding: 10px 20px;
+            padding: 8px 16px;
             border: none;
             border-radius: 30px;
             cursor: pointer;
@@ -81,7 +84,8 @@
             transition: var(--transition);
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
+            font-size: 14px;
         }
 
         .btn-primary {
@@ -97,39 +101,41 @@
             background-color: white;
             border-radius: var(--border-radius);
             box-shadow: var(--shadow);
-            padding: 30px;
-            margin-bottom: 20px;
+            padding: 20px;
+            margin-bottom: 15px;
             transition: var(--transition);
         }
 
         .card:hover {
-            transform: translateY(-5px);
+            transform: translateY(-3px);
             box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
         }
 
         .card-title {
-            font-size: 24px;
+            font-size: 22px;
             color: var(--primary);
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             text-align: center;
             border-bottom: 2px solid var(--light);
-            padding-bottom: 15px;
+            padding-bottom: 12px;
+            word-break: break-word;
         }
 
         .note-content {
             font-size: 16px;
-            line-height: 1.8;
+            line-height: 1.7;
             white-space: pre-line;
+            word-break: break-word;
         }
 
         .checkbox-list {
-            margin: 20px 0;
+            margin: 15px 0;
         }
 
         .checkbox-item {
             display: flex;
             align-items: center;
-            padding: 12px 15px;
+            padding: 10px 12px;
             border-bottom: 1px solid #eee;
             transition: var(--transition);
             position: relative;
@@ -140,9 +146,10 @@
         }
 
         .checkbox-item input[type="checkbox"] {
-            margin-right: 15px;
-            transform: scale(1.3);
+            margin-right: 12px;
+            transform: scale(1.2);
             cursor: pointer;
+            min-width: 18px;
         }
 
         .checkbox-item.checked {
@@ -159,23 +166,26 @@
         .item-text {
             flex: 1;
             transition: var(--transition);
+            word-break: break-word;
+            padding-right: 30px;
         }
 
         .empty-state {
             text-align: center;
-            padding: 50px 30px;
+            padding: 40px 20px;
             color: #777;
         }
 
         .empty-state i {
-            font-size: 64px;
-            margin-bottom: 20px;
+            font-size: 56px;
+            margin-bottom: 15px;
             color: #ddd;
         }
 
         .empty-state h2 {
             margin-bottom: 10px;
             color: var(--dark);
+            font-size: 20px;
         }
 
         .back-btn {
@@ -189,15 +199,17 @@
 
         .notification {
             position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 15px 20px;
+            top: 15px;
+            right: 15px;
+            left: 15px;
+            padding: 12px 15px;
             border-radius: var(--border-radius);
             color: white;
             font-weight: 600;
             z-index: 1100;
             box-shadow: var(--shadow);
             animation: slideInRight 0.3s ease;
+            text-align: center;
         }
 
         @keyframes slideInRight {
@@ -233,18 +245,19 @@
         }
 
         .spinner {
-            width: 50px;
-            height: 50px;
-            border: 5px solid #f3f3f3;
-            border-top: 5px solid var(--primary);
+            width: 45px;
+            height: 45px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary);
             border-radius: 50%;
             animation: spin 1s linear infinite;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
         }
 
         .loader-text {
             color: var(--dark);
             font-weight: 600;
+            font-size: 14px;
         }
 
         @keyframes spin {
@@ -254,10 +267,11 @@
 
         .saving-indicator {
             position: absolute;
-            right: 15px;
+            right: 12px;
             color: var(--success);
             opacity: 0;
             transition: var(--transition);
+            font-size: 14px;
         }
 
         .saving-indicator.show {
@@ -269,6 +283,75 @@
             0% { transform: scale(1); }
             50% { transform: scale(1.2); }
             100% { transform: scale(1); }
+        }
+
+        /* Mobile Responsive Styles */
+        @media (max-width: 480px) {
+            .container {
+                padding: 10px;
+            }
+            
+            header {
+                padding: 10px 0;
+                margin-bottom: 10px;
+            }
+            
+            .header-content {
+                padding: 0 10px;
+                flex-direction: column;
+                align-items: stretch;
+                gap: 8px;
+            }
+            
+            .logo {
+                justify-content: center;
+                font-size: 18px;
+            }
+            
+            .nav-buttons {
+                justify-content: center;
+            }
+            
+            .btn {
+                flex: 1;
+                justify-content: center;
+                padding: 10px;
+                font-size: 13px;
+            }
+            
+            .card {
+                padding: 15px;
+                margin-bottom: 10px;
+            }
+            
+            .card-title {
+                font-size: 20px;
+                margin-bottom: 12px;
+            }
+            
+            .note-content {
+                font-size: 15px;
+            }
+            
+            .checkbox-item {
+                padding: 8px 10px;
+            }
+            
+            .empty-state {
+                padding: 30px 15px;
+            }
+            
+            .empty-state i {
+                font-size: 48px;
+            }
+            
+            .notification {
+                top: 10px;
+                right: 10px;
+                left: 10px;
+                padding: 10px 12px;
+                font-size: 14px;
+            }
         }
     </style>
 </head>

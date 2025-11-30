@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - My Notes</title>
+    <link rel="icon" type="image/x-icon" href="images/icon.png">
     <style>
         :root {
             --primary: #4a6fa5;
@@ -29,33 +30,35 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
+            padding: 15px;
         }
 
         .login-container {
             background-color: white;
             border-radius: var(--border-radius);
             box-shadow: var(--shadow);
-            padding: 40px;
+            padding: 30px;
             width: 100%;
             max-width: 400px;
         }
 
         .logo {
             text-align: center;
-            font-size: 28px;
+            font-size: 26px;
             font-weight: bold;
             color: var(--primary);
-            margin-bottom: 30px;
+            margin-bottom: 25px;
         }
 
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 18px;
         }
 
         .form-label {
             display: block;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             font-weight: 600;
+            font-size: 14px;
         }
 
         .form-input {
@@ -64,6 +67,12 @@
             border: 1px solid #ddd;
             border-radius: var(--border-radius);
             font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
         }
 
         .btn {
@@ -75,6 +84,7 @@
             font-weight: 600;
             transition: all 0.3s ease;
             margin-bottom: 10px;
+            font-size: 16px;
         }
 
         .btn-primary {
@@ -119,11 +129,13 @@
             background-color: white;
             padding: 0 15px;
             color: #777;
+            font-size: 14px;
         }
 
         .toggle-auth {
             text-align: center;
             margin-top: 20px;
+            font-size: 14px;
         }
 
         .toggle-auth a {
@@ -136,6 +148,55 @@
             color: #e74c3c;
             margin-top: 10px;
             text-align: center;
+            font-size: 14px;
+        }
+
+        /* Mobile Responsive Styles */
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            
+            .login-container {
+                padding: 25px 20px;
+            }
+            
+            .logo {
+                font-size: 24px;
+                margin-bottom: 20px;
+            }
+            
+            .form-group {
+                margin-bottom: 15px;
+            }
+            
+            .form-input {
+                padding: 10px 12px;
+                font-size: 15px;
+            }
+            
+            .btn {
+                padding: 10px;
+                font-size: 15px;
+            }
+            
+            .divider {
+                margin: 15px 0;
+            }
+            
+            .toggle-auth {
+                margin-top: 15px;
+            }
+        }
+
+        @media (max-width: 320px) {
+            .login-container {
+                padding: 20px 15px;
+            }
+            
+            .logo {
+                font-size: 22px;
+            }
         }
     </style>
 </head>

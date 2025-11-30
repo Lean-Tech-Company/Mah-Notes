@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Notes</title>
+    <link rel="icon" type="image/x-icon" href="images/icon.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -36,46 +37,50 @@
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 20px;
+            padding: 15px;
         }
 
         header {
             background-color: white;
-            padding: 15px 0;
+            padding: 12px 0;
             box-shadow: var(--shadow);
             border-radius: var(--border-radius);
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
 
         .header-content {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 0 20px;
+            padding: 0 15px;
+            flex-wrap: wrap;
+            gap: 10px;
         }
 
         .logo {
-            font-size: 24px;
+            font-size: 22px;
             font-weight: bold;
             color: var(--primary);
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
         }
 
         .logo i {
-            font-size: 28px;
+            font-size: 26px;
         }
 
         .user-info {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
         }
 
         .user-avatar {
-            width: 40px;
-            height: 40px;
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
             background-color: var(--secondary);
             display: flex;
@@ -83,12 +88,13 @@
             justify-content: center;
             color: white;
             font-weight: bold;
+            font-size: 14px;
         }
 
         .main-content {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 20px;
+            gap: 15px;
         }
 
         @media (max-width: 768px) {
@@ -101,13 +107,13 @@
             background-color: white;
             border-radius: var(--border-radius);
             box-shadow: var(--shadow);
-            padding: 20px;
-            margin-bottom: 20px;
+            padding: 18px;
+            margin-bottom: 15px;
             transition: var(--transition);
         }
 
         .card:hover {
-            transform: translateY(-5px);
+            transform: translateY(-3px);
             box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
         }
 
@@ -115,16 +121,18 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+            gap: 10px;
         }
 
         .card-title {
-            font-size: 20px;
+            font-size: 18px;
             color: var(--primary);
         }
 
         .btn {
-            padding: 10px 20px;
+            padding: 8px 16px;
             border: none;
             border-radius: 30px;
             cursor: pointer;
@@ -132,7 +140,9 @@
             transition: var(--transition);
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
+            font-size: 14px;
+            white-space: nowrap;
         }
 
         .btn-primary {
@@ -182,12 +192,12 @@
 
         .text-area {
             width: 100%;
-            padding: 15px;
+            padding: 12px;
             border: 1px solid #ddd;
             border-radius: var(--border-radius);
             resize: vertical;
-            min-height: 150px;
-            font-size: 16px;
+            min-height: 120px;
+            font-size: 15px;
             transition: var(--transition);
         }
 
@@ -199,27 +209,29 @@
 
         .quick-entry-actions {
             display: flex;
-            gap: 10px;
+            gap: 8px;
             margin-top: 10px;
             justify-content: flex-end;
+            flex-wrap: wrap;
         }
 
         .type-toggle {
             display: flex;
             background-color: #f0f5ff;
             border-radius: var(--border-radius);
-            padding: 5px;
-            margin-bottom: 15px;
+            padding: 4px;
+            margin-bottom: 12px;
         }
 
         .type-option {
             flex: 1;
-            padding: 10px 15px;
+            padding: 8px 12px;
             text-align: center;
             cursor: pointer;
             border-radius: calc(var(--border-radius) - 5px);
             transition: var(--transition);
             font-weight: 600;
+            font-size: 14px;
         }
 
         .type-option.active {
@@ -239,6 +251,7 @@
             align-items: center;
             justify-content: center;
             animation: fadeIn 0.3s ease;
+            padding: 15px;
         }
 
         @keyframes fadeIn {
@@ -248,9 +261,9 @@
 
         .modal-content {
             background-color: white;
-            padding: 30px;
+            padding: 25px;
             border-radius: var(--border-radius);
-            width: 90%;
+            width: 100%;
             max-width: 500px;
             max-height: 80vh;
             overflow-y: auto;
@@ -267,18 +280,18 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
 
         .modal-title {
-            font-size: 22px;
+            font-size: 20px;
             color: var(--primary);
         }
 
         .close-modal {
             background: none;
             border: none;
-            font-size: 24px;
+            font-size: 22px;
             cursor: pointer;
             color: var(--dark);
             transition: var(--transition);
@@ -289,13 +302,13 @@
         }
 
         .checkbox-list {
-            margin: 15px 0;
+            margin: 12px 0;
         }
 
         .checkbox-item {
             display: flex;
             align-items: center;
-            padding: 10px;
+            padding: 8px;
             border-bottom: 1px solid #eee;
             cursor: move;
             transition: var(--transition);
@@ -306,8 +319,8 @@
         }
 
         .checkbox-item input[type="checkbox"] {
-            margin-right: 10px;
-            transform: scale(1.2);
+            margin-right: 8px;
+            transform: scale(1.1);
             cursor: pointer;
         }
 
@@ -317,21 +330,22 @@
         }
 
         .form-group {
-            margin-bottom: 15px;
+            margin-bottom: 12px;
         }
 
         .form-label {
             display: block;
             margin-bottom: 5px;
             font-weight: 600;
+            font-size: 14px;
         }
 
         .form-input {
             width: 100%;
-            padding: 10px 15px;
+            padding: 10px 12px;
             border: 1px solid #ddd;
             border-radius: var(--border-radius);
-            font-size: 16px;
+            font-size: 15px;
             transition: var(--transition);
         }
 
@@ -342,16 +356,18 @@
         }
 
         .notes-list {
-            margin-top: 20px;
+            margin-top: 15px;
         }
 
         .note-item {
             background-color: #f9f9f9;
-            padding: 15px;
+            padding: 12px;
             border-radius: var(--border-radius);
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             border-left: 4px solid var(--primary);
             transition: var(--transition);
+            word-break: break-word;
+            overflow-wrap: break-word;
         }
 
         .note-item:hover {
@@ -363,12 +379,22 @@
             margin-bottom: 5px;
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .note-title-text {
+            flex: 1;
+            min-width: 0;
+            word-break: break-word;
+            overflow-wrap: break-word;
         }
 
         .note-actions {
             display: flex;
-            gap: 10px;
+            gap: 6px;
+            flex-wrap: wrap;
         }
 
         .action-btn {
@@ -376,31 +402,39 @@
             border: none;
             cursor: pointer;
             color: var(--primary);
-            font-size: 14px;
+            font-size: 12px;
             transition: var(--transition);
-            padding: 5px 8px;
+            padding: 4px 8px;
             border-radius: 4px;
             display: flex;
             align-items: center;
-            gap: 5px;
+            gap: 4px;
+            white-space: nowrap;
         }
 
         .action-btn:hover {
             background-color: rgba(74, 111, 165, 0.1);
         }
 
+        .note-content {
+            font-size: 14px;
+            line-height: 1.5;
+            word-break: break-word;
+            overflow-wrap: break-word;
+        }
+
         .reusable-options {
             background-color: #f0f5ff;
-            padding: 15px;
+            padding: 12px;
             border-radius: var(--border-radius);
-            margin-top: 15px;
+            margin-top: 12px;
         }
 
         .days-selector {
             display: flex;
             flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 10px;
+            gap: 8px;
+            margin-top: 8px;
         }
 
         .day-checkbox {
@@ -408,11 +442,12 @@
         }
 
         .day-label {
-            padding: 8px 15px;
+            padding: 6px 12px;
             background-color: #e0e7ff;
             border-radius: 20px;
             cursor: pointer;
             transition: var(--transition);
+            font-size: 13px;
         }
 
         .day-checkbox:checked + .day-label {
@@ -422,19 +457,19 @@
 
         .empty-state {
             text-align: center;
-            padding: 30px;
+            padding: 25px 15px;
             color: #777;
         }
 
         .empty-state i {
-            font-size: 48px;
-            margin-bottom: 15px;
+            font-size: 42px;
+            margin-bottom: 12px;
             color: #ddd;
         }
 
         .drag-handle {
             cursor: move;
-            margin-right: 10px;
+            margin-right: 8px;
             color: #aaa;
         }
 
@@ -457,15 +492,17 @@
 
         .notification {
             position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 15px 20px;
+            top: 15px;
+            right: 15px;
+            left: 15px;
+            padding: 12px 15px;
             border-radius: var(--border-radius);
             color: white;
             font-weight: 600;
             z-index: 1100;
             box-shadow: var(--shadow);
             animation: slideInRight 0.3s ease;
+            text-align: center;
         }
 
         @keyframes slideInRight {
@@ -488,8 +525,8 @@
         .placeholder-text {
             color: #999;
             font-style: italic;
-            margin-top: 8px;
-            font-size: 14px;
+            margin-top: 6px;
+            font-size: 13px;
         }
 
         .placeholder-text i {
@@ -515,23 +552,225 @@
         }
 
         .spinner {
-            width: 50px;
-            height: 50px;
-            border: 5px solid #f3f3f3;
-            border-top: 5px solid var(--primary);
+            width: 45px;
+            height: 45px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary);
             border-radius: 50%;
             animation: spin 1s linear infinite;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
         }
 
         .loader-text {
             color: var(--dark);
             font-weight: 600;
+            font-size: 14px;
         }
 
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
+        }
+
+        /* Mobile Responsive Styles */
+        @media (max-width: 480px) {
+            .container {
+                padding: 10px;
+            }
+            
+            header {
+                padding: 10px 0;
+                margin-bottom: 10px;
+            }
+            
+            .header-content {
+                padding: 0 10px;
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .logo {
+                justify-content: center;
+                font-size: 20px;
+            }
+            
+            .user-info {
+                justify-content: center;
+                gap: 6px;
+            }
+            
+            .user-avatar {
+                width: 32px;
+                height: 32px;
+                font-size: 13px;
+            }
+            
+            .btn {
+                flex: 1;
+                justify-content: center;
+                padding: 8px 12px;
+                font-size: 13px;
+                min-width: 0;
+            }
+            
+            .card {
+                padding: 15px;
+                margin-bottom: 10px;
+            }
+            
+            .card-header {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 8px;
+            }
+            
+            .card-title {
+                text-align: center;
+                font-size: 17px;
+            }
+            
+            .main-content {
+                gap: 10px;
+            }
+            
+            .text-area {
+                min-height: 100px;
+                font-size: 14px;
+            }
+            
+            .quick-entry-actions {
+                justify-content: center;
+            }
+            
+            .type-option {
+                padding: 6px 10px;
+                font-size: 13px;
+            }
+            
+            .modal-content {
+                padding: 20px;
+            }
+            
+            .modal-title {
+                font-size: 18px;
+            }
+            
+            .form-input {
+                padding: 8px 10px;
+                font-size: 14px;
+            }
+            
+            .note-item {
+                padding: 10px;
+            }
+            
+            .note-title {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 6px;
+            }
+            
+            .note-actions {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .action-btn {
+                flex: 1;
+                justify-content: center;
+                font-size: 11px;
+                padding: 6px 8px;
+            }
+            
+            .empty-state {
+                padding: 20px 10px;
+            }
+            
+            .empty-state i {
+                font-size: 36px;
+            }
+            
+            .notification {
+                top: 10px;
+                right: 10px;
+                left: 10px;
+                padding: 10px 12px;
+                font-size: 14px;
+            }
+        }
+
+        @media (max-width: 360px) {
+            .container {
+                padding: 8px;
+            }
+            
+            .header-content {
+                padding: 0 8px;
+            }
+            
+            .logo {
+                font-size: 18px;
+            }
+            
+            .logo i {
+                font-size: 22px;
+            }
+            
+            .user-info {
+                flex-direction: column;
+                align-items: center;
+                width: 100%;
+            }
+            
+            .btn {
+                width: 100%;
+                margin-bottom: 4px;
+            }
+            
+            .card {
+                padding: 12px;
+            }
+            
+            .note-item {
+                padding: 8px;
+            }
+            
+            .note-actions {
+                gap: 4px;
+            }
+            
+            .action-btn {
+                font-size: 10px;
+                padding: 4px 6px;
+            }
+            
+            .action-btn i {
+                font-size: 10px;
+            }
+            
+            .modal-content {
+                padding: 15px;
+            }
+            
+            .form-input {
+                padding: 6px 8px;
+                font-size: 14px;
+            }
+        }
+
+        @media (max-width: 320px) {
+            .btn {
+                font-size: 12px;
+                padding: 6px 10px;
+            }
+            
+            .action-btn {
+                font-size: 10px;
+            }
+            
+            .type-option {
+                font-size: 12px;
+            }
         }
     </style>
 </head>
@@ -639,7 +878,7 @@
             </div>
             <div class="form-group">
                 <label class="form-label" for="note-content">Content</label>
-                <textarea class="form-input" id="note-content" rows="6" placeholder="Enter your note content"></textarea>
+                <textarea class="form-input" id="note-content" rows="5" placeholder="Enter your note content"></textarea>
             </div>
             <div class="form-group">
                 <button class="btn btn-primary" id="save-note">
@@ -662,7 +901,7 @@
             </div>
             <div class="form-group">
                 <label class="form-label" for="checklist-items">Items (one per line)</label>
-                <textarea class="form-input" id="checklist-items" rows="6" placeholder="Enter checklist items, one per line"></textarea>
+                <textarea class="form-input" id="checklist-items" rows="5" placeholder="Enter checklist items, one per line"></textarea>
             </div>
             <div class="reusable-options">
                 <div class="form-group">
@@ -760,6 +999,7 @@
 
         // Current quick entry type
         let currentQuickType = 'note';
+        let currentEditingChecklistId = null;
 
         // Check if user is logged in
         onAuthStateChanged(auth, (user) => {
@@ -848,7 +1088,7 @@
                 noteElement.className = 'note-item';
                 noteElement.innerHTML = `
                     <div class="note-title">
-                        <span>${note.title}</span>
+                        <span class="note-title-text">${note.title}</span>
                         <div class="note-actions">
                             <button class="action-btn view-btn" data-id="${key}" data-type="note">
                                 <i class="fas fa-eye"></i> View
@@ -914,7 +1154,7 @@
                 checklistElement.className = 'note-item';
                 checklistElement.innerHTML = `
                     <div class="note-title">
-                        <span>${checklist.title}</span>
+                        <span class="note-title-text">${checklist.title}</span>
                         <div class="note-actions">
                             <button class="action-btn view-btn" data-id="${key}" data-type="checklist">
                                 <i class="fas fa-eye"></i> View
@@ -964,13 +1204,20 @@
         // Create new note
         document.getElementById('new-note-btn').addEventListener('click', () => {
             document.getElementById('note-modal').style.display = 'flex';
+            // Reset form
+            document.getElementById('note-title').value = '';
+            document.getElementById('note-content').value = '';
+            const saveButton = document.getElementById('save-note');
+            saveButton.textContent = 'Save Note';
+            saveButton.innerHTML = '<i class="fas fa-save"></i> Save Note';
+            saveButton.onclick = saveNewNote;
         });
 
         document.getElementById('close-note-modal').addEventListener('click', () => {
             document.getElementById('note-modal').style.display = 'none';
         });
 
-        document.getElementById('save-note').addEventListener('click', () => {
+        function saveNewNote() {
             const title = document.getElementById('note-title').value;
             const content = document.getElementById('note-content').value;
             
@@ -983,7 +1230,7 @@
             } else {
                 showNotification('Please fill in both title and content', 'error');
             }
-        });
+        }
 
         function saveNote(title, content) {
             const userId = auth.currentUser.uid;
@@ -1017,7 +1264,7 @@
                     document.getElementById('note-content').value = '';
                     saveButton.textContent = 'Save Note';
                     saveButton.innerHTML = '<i class="fas fa-save"></i> Save Note';
-                    saveButton.onclick = saveNote;
+                    saveButton.onclick = saveNewNote;
                     showNotification('Note updated successfully!', 'success');
                 } else {
                     showNotification('Please fill in both title and content', 'error');
@@ -1048,10 +1295,22 @@
         // Create new checklist
         document.getElementById('new-checklist-btn').addEventListener('click', () => {
             document.getElementById('checklist-modal').style.display = 'flex';
+            // Reset form and state
+            document.getElementById('checklist-title').value = '';
+            document.getElementById('checklist-items').value = '';
+            document.getElementById('reusable-no').checked = true;
+            document.getElementById('reusable-options').style.display = 'none';
+            currentEditingChecklistId = null;
+            
+            const saveButton = document.getElementById('save-checklist');
+            saveButton.textContent = 'Save Checklist';
+            saveButton.innerHTML = '<i class="fas fa-save"></i> Save Checklist';
+            saveButton.onclick = saveNewChecklist;
         });
 
         document.getElementById('close-checklist-modal').addEventListener('click', () => {
             document.getElementById('checklist-modal').style.display = 'none';
+            currentEditingChecklistId = null;
         });
 
         // Toggle reusable options
@@ -1066,7 +1325,7 @@
             });
         });
 
-        document.getElementById('save-checklist').addEventListener('click', () => {
+        function saveNewChecklist() {
             const title = document.getElementById('checklist-title').value;
             const itemsText = document.getElementById('checklist-items').value;
             
@@ -1099,7 +1358,7 @@
             } else {
                 showNotification('Please fill in both title and items', 'error');
             }
-        });
+        }
 
         function saveChecklist(title, items, isReusable, reusableOptions) {
             const userId = auth.currentUser.uid;
@@ -1114,7 +1373,7 @@
             });
         }
 
-        // Edit checklist
+        // Edit checklist - FIXED VERSION
         function editChecklist(checklistId, checklist) {
             document.getElementById('checklist-title').value = checklist.title;
             document.getElementById('checklist-items').value = checklist.items.map(item => item.text).join('\n');
@@ -1139,48 +1398,56 @@
             }
             
             document.getElementById('checklist-modal').style.display = 'flex';
+            currentEditingChecklistId = checklistId;
             
             // Change save button to update
             const saveButton = document.getElementById('save-checklist');
             saveButton.textContent = 'Update Checklist';
             saveButton.innerHTML = '<i class="fas fa-save"></i> Update Checklist';
-            saveButton.onclick = () => {
-                const title = document.getElementById('checklist-title').value;
-                const itemsText = document.getElementById('checklist-items').value;
+            saveButton.onclick = updateExistingChecklist;
+        }
+
+        function updateExistingChecklist() {
+            const title = document.getElementById('checklist-title').value;
+            const itemsText = document.getElementById('checklist-items').value;
+            
+            if (!title || !itemsText) {
+                showNotification('Please fill in both title and items', 'error');
+                return;
+            }
+
+            const items = itemsText.split('\n')
+                .filter(item => item.trim() !== '')
+                .map(item => ({ text: item.trim(), checked: false }));
+            
+            const isReusable = document.getElementById('reusable-yes').checked;
+            let reusableOptions = null;
+            
+            if (isReusable) {
+                const frequency = document.getElementById('reuse-frequency').value;
+                const selectedDays = [];
+                document.querySelectorAll('.day-checkbox:checked').forEach(checkbox => {
+                    selectedDays.push(checkbox.value);
+                });
                 
-                if (title && itemsText) {
-                    const items = itemsText.split('\n')
-                        .filter(item => item.trim() !== '')
-                        .map(item => ({ text: item.trim(), checked: false }));
-                    
-                    const isReusable = document.getElementById('reusable-yes').checked;
-                    let reusableOptions = null;
-                    
-                    if (isReusable) {
-                        const frequency = document.getElementById('reuse-frequency').value;
-                        const selectedDays = [];
-                        document.querySelectorAll('.day-checkbox:checked').forEach(checkbox => {
-                            selectedDays.push(checkbox.value);
-                        });
-                        
-                        reusableOptions = {
-                            frequency,
-                            days: selectedDays
-                        };
-                    }
-                    
-                    updateChecklist(checklistId, title, items, isReusable, reusableOptions);
-                    document.getElementById('checklist-modal').style.display = 'none';
-                    document.getElementById('checklist-title').value = '';
-                    document.getElementById('checklist-items').value = '';
-                    saveButton.textContent = 'Save Checklist';
-                    saveButton.innerHTML = '<i class="fas fa-save"></i> Save Checklist';
-                    saveButton.onclick = saveChecklist;
-                    showNotification('Checklist updated successfully!', 'success');
-                } else {
-                    showNotification('Please fill in both title and items', 'error');
-                }
-            };
+                reusableOptions = {
+                    frequency,
+                    days: selectedDays
+                };
+            }
+            
+            updateChecklist(currentEditingChecklistId, title, items, isReusable, reusableOptions);
+            document.getElementById('checklist-modal').style.display = 'none';
+            document.getElementById('checklist-title').value = '';
+            document.getElementById('checklist-items').value = '';
+            
+            const saveButton = document.getElementById('save-checklist');
+            saveButton.textContent = 'Save Checklist';
+            saveButton.innerHTML = '<i class="fas fa-save"></i> Save Checklist';
+            saveButton.onclick = saveNewChecklist;
+            
+            currentEditingChecklistId = null;
+            showNotification('Checklist updated successfully!', 'success');
         }
 
         function updateChecklist(checklistId, title, items, isReusable, reusableOptions) {
@@ -1332,7 +1599,7 @@
                                 updatedAt: new Date().toISOString()
                             });
                         }
-                    }, { onlyOnce: true });
+                }, { onlyOnce: true });
                 }
             });
         }
