@@ -215,6 +215,59 @@
             color: var(--primary);
         }
 
+        .view-mode-badge.current.live {
+            background-color: rgba(46, 204, 113, 0.12);
+            color: #27ae60;
+        }
+
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #2ecc71;
+            flex-shrink: 0;
+            animation: livePulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes livePulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.7); }
+        }
+
+        .permission-error {
+            text-align: center;
+            padding: 30px 20px;
+            background-color: #fff9f0;
+            border: 1px solid #f39c12;
+            border-radius: var(--border-radius);
+            color: var(--dark);
+        }
+
+        .permission-error i {
+            font-size: 40px;
+            color: #f39c12;
+            display: block;
+            margin-bottom: 12px;
+        }
+
+        .permission-error h2 {
+            margin-bottom: 8px;
+            font-size: 18px;
+        }
+
+        .permission-error code {
+            display: block;
+            margin: 12px auto;
+            background: #f4f4f4;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 12px;
+            text-align: left;
+            max-width: 420px;
+            white-space: pre;
+            overflow-x: auto;
+        }
+
         .view-mode-badge.reference {
             background-color: rgba(255, 126, 95, 0.12);
             color: var(--accent);
@@ -484,6 +537,9 @@
         const database = getDatabase(app);
         const auth = getAuth(app);
 
+        // Holds the unsubscribe function for any active live listener
+        let _liveUnsub = null;
+
         // Check URL parameters for shared view
         const urlParams = new URLSearchParams(window.location.search);
         const sharedParam = urlParams.get('shared');
@@ -695,8 +751,78 @@
         // Display shared item in read-only mode
         function displaySharedItem(item) {
             const contentArea = document.getElementById('content-area');
-            const viewMode = item.viewMode || 'current'; // 'current' or 'reference'
+            const viewMode = item.viewMode || 'current';
 
+            // ── CURRENT-LIVE: real-time Firebase stream ──────────────────────────
+            if (viewMode === 'current-live') {
+                // Cancel any previous listener
+                if (_liveUnsub) { _liveUnsub(); _liveUnsub = null; }
+
+                const { userId, itemId, type } = item;
+                const itemRef = ref(database, `users/${userId}/${type}s/${itemId}`);
+
+                // Show loading skeleton while first data arrives
+                contentArea.innerHTML = `
+                    <div class="card" style="text-align:center;padding:40px;color:#aaa;">
+                        <i class="fas fa-spinner fa-spin" style="font-size:32px;margin-bottom:12px;display:block;"></i>
+                        Connecting to live data…
+                    </div>`;
+
+                _liveUnsub = onValue(itemRef, (snapshot) => {
+                    const data = snapshot.val();
+                    if (!data) { showItemNotFound(); return; }
+
+                    if (type === 'note') {
+                        contentArea.innerHTML = `
+                            <div class="card">
+                                <div class="view-mode-badge current live">
+                                    <div class="live-dot"></div> Live &bull; Current View
+                                </div>
+                                <h1 class="card-title">${escapeHtml(data.title)}</h1>
+                                <div class="note-content">${escapeHtml(data.content || '')}</div>
+                            </div>`;
+                    } else {
+                        // Checklist live current view
+                        contentArea.innerHTML = `
+                            <div class="card">
+                                <div class="view-mode-badge current live">
+                                    <div class="live-dot"></div> Live &bull; Current View
+                                </div>
+                                <h1 class="card-title">${escapeHtml(data.title)}</h1>
+                                <div class="checkbox-list">
+                                    ${(data.items || []).map(ci => `
+                                        <div class="checkbox-item ${ci.checked ? 'checked' : ''}" style="cursor:default;pointer-events:none;">
+                                            <input type="checkbox" ${ci.checked ? 'checked' : ''} disabled
+                                                style="margin-right:12px;transform:scale(1.2);min-width:18px;">
+                                            <span class="item-text">${escapeHtml(ci.text)}</span>
+                                        </div>`).join('')}
+                                </div>
+                            </div>`;
+                    }
+                }, (error) => {
+                    // Firebase permission denied or network error
+                    contentArea.innerHTML = `
+                        <div class="permission-error">
+                            <i class="fas fa-lock"></i>
+                            <h2>Access Blocked by Firebase Rules</h2>
+                            <p>To allow public sharing, update your Firebase Realtime Database rules to permit guest reads:</p>
+                            <code>{
+  &quot;rules&quot;: {
+    &quot;users&quot;: {
+      &quot;$uid&quot;: {
+        &quot;.read&quot;: true,
+        &quot;.write&quot;: &quot;auth.uid === $uid&quot;
+      }
+    }
+  }
+}</code>
+                            <p style="font-size:12px;color:#999;margin-top:10px;">Set these rules in your Firebase Console &rarr; Realtime Database &rarr; Rules</p>
+                        </div>`;
+                });
+                return; // exit early — onValue handles all rendering
+            }
+
+            // ── STATIC PATHS (reference view / backward-compat static snapshots) ─
             if (item.type === 'note') {
                 contentArea.innerHTML = `
                     <div class="card">
@@ -706,8 +832,8 @@
                     </div>
                 `;
             } else if (item.type === 'checklist') {
-                if (viewMode === 'current') {
-                    // Current View: show owner's live state, checked = line-through, no interaction
+                if (viewMode !== 'reference') {
+                    // Static current view snapshot (backward compatibility)
                     contentArea.innerHTML = `
                         <div class="card">
                             <div class="view-mode-badge current"><i class="fas fa-eye"></i> Current View</div>
