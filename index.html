@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Notes</title>
     <link rel="icon" type="image/x-icon" href="images/icon.png">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
     <style>
         :root {
             --primary: #4a6fa5;
@@ -1375,6 +1375,7 @@
 
         // Edit checklist - FIXED VERSION
         function editChecklist(checklistId, checklist) {
+            if (!checklist) return;
             document.getElementById('checklist-title').value = checklist.title;
             document.getElementById('checklist-items').value = checklist.items.map(item => item.text).join('\n');
             
@@ -1389,8 +1390,9 @@
                 });
                 
                 // Check the appropriate days
-                checklist.reusableOptions.days.forEach(day => {
-                    document.getElementById(`day-${day}`).checked = true;
+                (checklist.reusableOptions.days || []).forEach(day => {
+                    const dayEl = document.getElementById(`day-${day}`);
+                    if (dayEl) dayEl.checked = true;
                 });
             } else {
                 document.getElementById('reusable-no').checked = true;
