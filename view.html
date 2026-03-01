@@ -197,6 +197,44 @@
             background-color: #e67e22;
         }
 
+        .view-mode-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 4px 12px;
+            border-radius: 20px;
+            margin: 0 auto 14px;
+            width: fit-content;
+            display: flex;
+        }
+
+        .view-mode-badge.current {
+            background-color: rgba(74, 111, 165, 0.12);
+            color: var(--primary);
+        }
+
+        .view-mode-badge.reference {
+            background-color: rgba(255, 126, 95, 0.12);
+            color: var(--accent);
+        }
+
+        .ref-notice {
+            text-align: center;
+            font-size: 12px;
+            color: #999;
+            margin-top: 10px;
+            padding: 8px;
+            background-color: #fafafa;
+            border-radius: 8px;
+            border: 1px dashed #ddd;
+        }
+
+        .ref-notice i {
+            margin-right: 4px;
+        }
+
         .notification {
             position: fixed;
             top: 15px;
@@ -654,29 +692,74 @@
             }, 3000);
         }
 
-        // Display shared item in read-only mode (no checkboxes)
+        // Display shared item in read-only mode
         function displaySharedItem(item) {
             const contentArea = document.getElementById('content-area');
+            const viewMode = item.viewMode || 'current'; // 'current' or 'reference'
+
             if (item.type === 'note') {
                 contentArea.innerHTML = `
                     <div class="card">
+                        <div class="view-mode-badge current"><i class="fas fa-eye"></i> Current View</div>
                         <h1 class="card-title">${escapeHtml(item.title)}</h1>
                         <div class="note-content">${escapeHtml(item.content || '')}</div>
                     </div>
                 `;
             } else if (item.type === 'checklist') {
-                contentArea.innerHTML = `
-                    <div class="card">
-                        <h1 class="card-title">${escapeHtml(item.title)}</h1>
-                        <div class="checkbox-list">
-                            ${(item.items || []).map(checkItem => `
-                                <div class="checkbox-item" style="cursor: default;">
-                                    <span class="item-text" style="padding-left: 8px;">${escapeHtml(checkItem.text)}</span>
-                                </div>
-                            `).join('')}
+                if (viewMode === 'current') {
+                    // Current View: show owner's live state, checked = line-through, no interaction
+                    contentArea.innerHTML = `
+                        <div class="card">
+                            <div class="view-mode-badge current"><i class="fas fa-eye"></i> Current View</div>
+                            <h1 class="card-title">${escapeHtml(item.title)}</h1>
+                            <div class="checkbox-list">
+                                ${(item.items || []).map(ci => `
+                                    <div class="checkbox-item ${ci.checked ? 'checked' : ''}" style="cursor: default; pointer-events: none;">
+                                        <input type="checkbox" ${ci.checked ? 'checked' : ''} disabled style="margin-right: 12px; transform: scale(1.2); min-width: 18px;">
+                                        <span class="item-text">${escapeHtml(ci.text)}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
                         </div>
-                    </div>
-                `;
+                    `;
+                } else {
+                    // Reference View: interactive checkboxes backed by sessionStorage, nothing saves to DB
+                    const storageKey = 'ref_' + btoa(item.title).slice(0, 20);
+                    let saved = {};
+                    try { saved = JSON.parse(sessionStorage.getItem(storageKey) || '{}'); } catch(e) {}
+
+                    contentArea.innerHTML = `
+                        <div class="card">
+                            <div class="view-mode-badge reference"><i class="fas fa-list-check"></i> Reference View</div>
+                            <h1 class="card-title">${escapeHtml(item.title)}</h1>
+                            <div class="checkbox-list" id="ref-checklist">
+                                ${(item.items || []).map((ci, idx) => {
+                                    const isChecked = saved[idx] === true;
+                                    return `
+                                        <div class="checkbox-item ${isChecked ? 'checked' : ''}" data-index="${idx}">
+                                            <input type="checkbox" ${isChecked ? 'checked' : ''} style="margin-right: 12px; transform: scale(1.2); cursor: pointer; min-width: 18px;">
+                                            <span class="item-text">${escapeHtml(ci.text)}</span>
+                                        </div>
+                                    `;
+                                }).join('')}
+                            </div>
+                            <div class="ref-notice"><i class="fas fa-info-circle"></i> Your progress is only kept while this tab is open. Refreshing resets all checkboxes.</div>
+                        </div>
+                    `;
+
+                    // Wire up interactive checkboxes with sessionStorage
+                    document.getElementById('ref-checklist').querySelectorAll('.checkbox-item').forEach(rowEl => {
+                        const cb = rowEl.querySelector('input[type="checkbox"]');
+                        cb.addEventListener('change', () => {
+                            const idx = parseInt(rowEl.getAttribute('data-index'));
+                            rowEl.classList.toggle('checked', cb.checked);
+                            let state = {};
+                            try { state = JSON.parse(sessionStorage.getItem(storageKey) || '{}'); } catch(e) {}
+                            state[idx] = cb.checked;
+                            sessionStorage.setItem(storageKey, JSON.stringify(state));
+                        });
+                    });
+                }
             } else {
                 showItemNotFound();
             }
