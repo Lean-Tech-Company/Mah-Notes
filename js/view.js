@@ -3,7 +3,7 @@
 // ============================================================
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
-import { getDatabase, ref, onValue, update, remove } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
+import { getDatabase, ref, get, onValue, update, remove } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
 import { firebaseConfig } from './firebase-config.js';
 
@@ -17,20 +17,60 @@ let _liveUnsub = null;
 
 // Check URL parameters for shared view
 const urlParams = new URLSearchParams(window.location.search);
+const tokenParam = urlParams.get('token');
 const sharedParam = urlParams.get('shared');
 
-if (sharedParam) {
-    // Shared view mode - no login required
+function setupSharedHeader() {
+    document.getElementById('header-logo').innerHTML =
+        '<i class="fas fa-sticky-note"></i> My Notes <span class="shared-logo-sub">· shared</span>';
+    document.getElementById('back-btn').style.display = 'none';
+    document.getElementById('login-btn').style.display = 'flex';
+    document.getElementById('signup-btn').style.display = 'flex';
+}
+
+if (tokenParam) {
+    // Token-based share — look up in Firebase
+    const tokenRef = ref(database, `shareTokens/${tokenParam}`);
+    get(tokenRef).then(snapshot => {
+        if (!snapshot.exists()) {
+            showLinkExpired();
+            return;
+        }
+        const tokenData = snapshot.val();
+        let sharedItem;
+
+        if (tokenData.viewMode === 'current-live') {
+            sharedItem = {
+                viewMode: 'current-live',
+                type: tokenData.itemType,
+                userId: tokenData.userId,
+                itemId: tokenData.itemId
+            };
+        } else if (tokenData.viewMode === 'reference' && tokenData.referenceData) {
+            sharedItem = {
+                viewMode: 'reference',
+                type: tokenData.itemType,
+                title: tokenData.referenceData.title,
+                items: tokenData.referenceData.items
+            };
+        } else {
+            showLinkExpired();
+            return;
+        }
+
+        displaySharedItem(sharedItem);
+        setupSharedHeader();
+    }).catch(error => {
+        console.error('Token lookup error:', error);
+        showLinkExpired();
+    });
+} else if (sharedParam) {
+    // Legacy base64 share — backward compatibility
     try {
         const decoded = new TextDecoder().decode(Uint8Array.from(atob(decodeURIComponent(sharedParam)), c => c.charCodeAt(0)));
         const sharedItem = JSON.parse(decoded);
         displaySharedItem(sharedItem);
-        // Update header for shared view: show app logo + auth buttons, hide back
-        document.getElementById('header-logo').innerHTML =
-            '<i class="fas fa-sticky-note"></i> My Notes <span class="shared-logo-sub">· shared</span>';
-        document.getElementById('back-btn').style.display = 'none';
-        document.getElementById('login-btn').style.display = 'flex';
-        document.getElementById('signup-btn').style.display = 'flex';
+        setupSharedHeader();
     } catch (e) {
         console.error('Share decode error:', e);
         showItemNotFound();
@@ -375,6 +415,19 @@ function escapeHtml(str) {
     const div = document.createElement('div');
     div.textContent = str;
     return div.innerHTML;
+}
+
+// Show message when share link is expired or revoked
+function showLinkExpired() {
+    setupSharedHeader();
+    const contentArea = document.getElementById('content-area');
+    contentArea.innerHTML = `
+        <div class="empty-state">
+            <i class="fas fa-link-slash"></i>
+            <h2>Link Expired or Revoked</h2>
+            <p>This share link is no longer active. The owner may have revoked it or generated a new one.</p>
+        </div>
+    `;
 }
 
 // Show message when no item is selected
