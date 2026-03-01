@@ -3,7 +3,7 @@
 // ============================================================
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
-import { getDatabase, ref, set, onValue, push, update, remove } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
+import { getDatabase, ref, set, get, onValue, push, update, remove } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
 import { firebaseConfig } from './firebase-config.js';
 
@@ -320,6 +320,7 @@ function deleteNote(noteId) {
         const userId = auth.currentUser.uid;
         const noteRef = ref(database, `users/${userId}/notes/${noteId}`);
         remove(noteRef);
+        cleanupShareTokens(userId, noteId);
         showNotification('Note deleted successfully!', 'success');
     }
 }
@@ -518,6 +519,7 @@ function deleteChecklist(checklistId) {
         const userId = auth.currentUser.uid;
         const checklistRef = ref(database, `users/${userId}/checklists/${checklistId}`);
         remove(checklistRef);
+        cleanupShareTokens(userId, checklistId);
         showNotification('Checklist deleted successfully!', 'success');
     }
 }
@@ -692,69 +694,139 @@ function showNotification(message, type) {
     }, 3000);
 }
 
-// Share item function - generates Current View (live) and Reference View (static) links
-function shareItem(itemType, itemId, item) {
+// ── Share Token System ─────────────────────────────────────────
+
+// Generate a short random token
+function generateToken(length = 10) {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    const arr = new Uint8Array(length);
+    crypto.getRandomValues(arr);
+    for (let i = 0; i < length; i++) {
+        result += chars[arr[i] % chars.length];
+    }
+    return result;
+}
+
+// Get or create a share token for a specific item + viewMode
+async function getOrCreateToken(userId, itemId, itemType, viewMode, item) {
+    const tokenKey = `${itemId}_${viewMode}`;
+    const userTokenRef = ref(database, `users/${userId}/shareTokens/${tokenKey}`);
+
+    const snapshot = await get(userTokenRef);
+    if (snapshot.exists()) {
+        const data = snapshot.val();
+        // Verify the public token still exists
+        const publicRef = ref(database, `shareTokens/${data.token}`);
+        const pubSnap = await get(publicRef);
+        if (pubSnap.exists()) {
+            return data.token;
+        }
+    }
+
+    // Create new token
+    const token = generateToken(10);
+    const tokenData = {
+        userId,
+        itemId,
+        itemType,
+        viewMode,
+        createdAt: Date.now()
+    };
+
+    if (viewMode === 'reference') {
+        tokenData.referenceData = {
+            title: item.title,
+            items: (item.items || []).map(i => ({ text: i.text, checked: false }))
+        };
+    }
+
+    await set(ref(database, `shareTokens/${token}`), tokenData);
+    await set(userTokenRef, {
+        token,
+        itemType,
+        viewMode,
+        createdAt: Date.now()
+    });
+
+    return token;
+}
+
+// Clean up all share tokens when an item is deleted
+async function cleanupShareTokens(userId, itemId) {
+    const modes = ['current-live', 'reference'];
+    for (const mode of modes) {
+        const tokenKey = `${itemId}_${mode}`;
+        const userTokenRef = ref(database, `users/${userId}/shareTokens/${tokenKey}`);
+        const snap = await get(userTokenRef);
+        if (snap.exists()) {
+            const { token } = snap.val();
+            await remove(ref(database, `shareTokens/${token}`));
+            await remove(userTokenRef);
+        }
+    }
+}
+
+// Share item — creates tokens and shows the share modal
+async function shareItem(itemType, itemId, item) {
     if (!item) {
         showNotification('Item not found', 'error');
         return;
     }
 
-    const baseUrl = window.location.href.split('?')[0].replace(/[^\/]*$/, '') + 'view.html?shared=';
+    const baseUrl = window.location.href.split('?')[0].replace(/[^\/]*$/, '') + 'view.html?token=';
     const userId = auth.currentUser.uid;
 
-    function encodePayload(payload) {
-        const jsonStr = JSON.stringify(payload);
-        return encodeURIComponent(btoa(Array.from(new TextEncoder().encode(jsonStr), b => String.fromCharCode(b)).join('')));
-    }
-
     const container = document.getElementById('share-links-container');
-    container.innerHTML = '';
-
-    // Current View: live Firebase reference — viewer always sees real-time owner data
-    const currentPayload = {
-        viewMode: 'current-live',
-        type: itemType,
-        userId: userId,
-        itemId: itemId
-    };
-
-    if (itemType === 'note') {
-        container.innerHTML = buildShareCard(
-            'current', baseUrl + encodePayload(currentPayload),
-            '<i class="fas fa-eye"></i> Current View',
-            'Viewer sees your note in real-time. Any edits you make appear instantly on their screen.'
-        );
-    } else {
-        // Checklists: Current View (live) + Reference View (static blank template)
-        const refItems = (item.items || []).map(i => ({ text: i.text, checked: false }));
-        const referencePayload = {
-            viewMode: 'reference',
-            type: 'checklist',
-            title: item.title,
-            items: refItems
-        };
-        container.innerHTML =
-            buildShareCard('current', baseUrl + encodePayload(currentPayload),
-                '<i class="fas fa-circle" style="color:#2ecc71;font-size:10px;"></i> Current View',
-                'Viewer sees your live progress in real-time. Checked items appear crossed out as you check them.') +
-            buildShareCard('reference', baseUrl + encodePayload(referencePayload),
-                '<i class="fas fa-list-check"></i> Reference View',
-                'Viewer gets a blank template they can check off themselves. Resets on page refresh — nothing saves.');
-    }
-
+    container.innerHTML = '<div style="text-align:center;padding:20px;color:#aaa;"><i class="fas fa-spinner fa-spin"></i> Loading share links…</div>';
     document.getElementById('share-modal').style.display = 'flex';
+
+    try {
+        if (itemType === 'note') {
+            const token = await getOrCreateToken(userId, itemId, itemType, 'current-live', item);
+            container.innerHTML = buildShareCard(
+                'current', baseUrl + token, token,
+                '<i class="fas fa-eye"></i> Current View',
+                'Viewer sees your note in real-time. Any edits you make appear instantly on their screen.',
+                userId, itemId, 'current-live'
+            );
+        } else {
+            const currentToken = await getOrCreateToken(userId, itemId, itemType, 'current-live', item);
+            const refToken = await getOrCreateToken(userId, itemId, itemType, 'reference', item);
+            container.innerHTML =
+                buildShareCard('current', baseUrl + currentToken, currentToken,
+                    '<i class="fas fa-circle" style="color:#2ecc71;font-size:10px;"></i> Current View',
+                    'Viewer sees your live progress in real-time. Checked items appear crossed out as you check them.',
+                    userId, itemId, 'current-live') +
+                buildShareCard('reference', baseUrl + refToken, refToken,
+                    '<i class="fas fa-list-check"></i> Reference View',
+                    'Viewer gets a blank template they can check off themselves. Resets on page refresh — nothing saves.',
+                    userId, itemId, 'reference');
+        }
+    } catch (error) {
+        console.error('Share token error:', error);
+        container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--danger);"><i class="fas fa-exclamation-triangle"></i> Failed to generate share links. Try again.</div>';
+    }
 }
 
-function buildShareCard(mode, url, titleHtml, desc) {
+function buildShareCard(mode, url, token, titleHtml, desc, userId, itemId, viewMode) {
     const accent = mode === 'reference' ? 'var(--accent)' : 'var(--primary)';
     return `
-        <div class="share-view-card">
+        <div class="share-view-card" id="share-card-${token}">
             <div class="share-view-title" style="color: ${accent};">${titleHtml}</div>
             <div class="share-view-desc">${desc}</div>
             <div class="share-copy-row">
                 <input type="text" class="share-link-input" value="${url}" readonly>
                 <button class="btn btn-success share-copy-btn" onclick="copyShareLink(this)">
                     <i class="fas fa-copy"></i> Copy
+                </button>
+            </div>
+            <div class="share-token-actions">
+                <button class="btn btn-sm btn-outline-danger" onclick="revokeShareToken('${token}','${userId}','${itemId}','${viewMode}')">
+                    <i class="fas fa-ban"></i> Revoke
+                </button>
+                <button class="btn btn-sm btn-outline-warning" onclick="regenerateShareToken('${token}','${userId}','${itemId}','${viewMode}')">
+                    <i class="fas fa-sync-alt"></i> New Link
                 </button>
             </div>
         </div>
@@ -774,6 +846,72 @@ window.copyShareLink = function (btn) {
         btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
         setTimeout(() => { btn.innerHTML = '<i class="fas fa-copy"></i> Copy'; }, 2000);
     });
+};
+
+window.revokeShareToken = async function(token, userId, itemId, viewMode) {
+    if (!confirm('Revoke this share link? Anyone with this link will lose access.')) return;
+    try {
+        const tokenKey = `${itemId}_${viewMode}`;
+        await remove(ref(database, `shareTokens/${token}`));
+        await remove(ref(database, `users/${userId}/shareTokens/${tokenKey}`));
+        const card = document.getElementById(`share-card-${token}`);
+        if (card) {
+            card.innerHTML = '<div class="share-revoked-notice"><i class="fas fa-ban"></i> Link revoked</div>';
+        }
+        showNotification('Share link revoked!', 'success');
+    } catch (error) {
+        console.error('Revoke error:', error);
+        showNotification('Failed to revoke link', 'error');
+    }
+};
+
+window.regenerateShareToken = async function(token, userId, itemId, viewMode) {
+    try {
+        const tokenKey = `${itemId}_${viewMode}`;
+        const oldSnap = await get(ref(database, `shareTokens/${token}`));
+        const oldData = oldSnap.exists() ? oldSnap.val() : null;
+
+        // Remove old token
+        await remove(ref(database, `shareTokens/${token}`));
+
+        // Generate new
+        const newToken = generateToken(10);
+        const tokenData = {
+            userId,
+            itemId,
+            itemType: oldData ? oldData.itemType : 'checklist',
+            viewMode,
+            createdAt: Date.now()
+        };
+        if (oldData && oldData.referenceData) {
+            tokenData.referenceData = oldData.referenceData;
+        }
+
+        await set(ref(database, `shareTokens/${newToken}`), tokenData);
+        await set(ref(database, `users/${userId}/shareTokens/${tokenKey}`), {
+            token: newToken,
+            itemType: tokenData.itemType,
+            viewMode,
+            createdAt: Date.now()
+        });
+
+        // Update UI
+        const baseUrl = window.location.href.split('?')[0].replace(/[^\/]*$/, '') + 'view.html?token=';
+        const card = document.getElementById(`share-card-${token}`);
+        if (card) {
+            card.id = `share-card-${newToken}`;
+            const input = card.querySelector('.share-link-input');
+            if (input) input.value = baseUrl + newToken;
+            const revokeBtn = card.querySelector('.btn-outline-danger');
+            const regenBtn = card.querySelector('.btn-outline-warning');
+            if (revokeBtn) revokeBtn.setAttribute('onclick', `revokeShareToken('${newToken}','${userId}','${itemId}','${viewMode}')`);
+            if (regenBtn) regenBtn.setAttribute('onclick', `regenerateShareToken('${newToken}','${userId}','${itemId}','${viewMode}')`);
+        }
+        showNotification('New share link generated!', 'success');
+    } catch (error) {
+        console.error('Regenerate error:', error);
+        showNotification('Failed to generate new link', 'error');
+    }
 };
 
 // Close share modal
