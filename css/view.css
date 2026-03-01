@@ -1,0 +1,363 @@
+/* ============================================================
+   VIEW PAGE — Styles specific to the view / shared pages
+   ============================================================ */
+
+/* ── Layout Override ────────────────────────────────────────── */
+.container {
+    max-width: 800px;
+}
+
+/* ── Logo Override ──────────────────────────────────────────── */
+.logo {
+    font-size: 20px;
+}
+
+.logo i {
+    font-size: 24px;
+}
+
+/* ── Navigation Buttons ─────────────────────────────────────── */
+.nav-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+/* ── Card Overrides ─────────────────────────────────────────── */
+.card {
+    padding: 20px;
+}
+
+.card-title {
+    font-size: 22px;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid var(--light);
+    padding-bottom: 12px;
+    word-break: break-word;
+}
+
+/* ── Note Content ───────────────────────────────────────────── */
+.note-content {
+    font-size: 16px;
+    line-height: 1.7;
+    white-space: pre-line;
+    word-break: break-word;
+}
+
+/* ── Checkbox Overrides ─────────────────────────────────────── */
+.checkbox-list {
+    margin: 15px 0;
+}
+
+.checkbox-item {
+    padding: 10px 12px;
+    position: relative;
+}
+
+.checkbox-item input[type="checkbox"] {
+    margin-right: 12px;
+    transform: scale(1.2);
+    min-width: 18px;
+}
+
+.checkbox-item.checked .item-text {
+    text-decoration: line-through;
+    text-decoration-thickness: 2px;
+    text-decoration-color: var(--primary);
+}
+
+.checkbox-item.checked {
+    background-color: #f8f9fa;
+}
+
+.item-text {
+    flex: 1;
+    transition: var(--transition);
+    word-break: break-word;
+    padding-right: 30px;
+}
+
+/* ── Empty State Override ───────────────────────────────────── */
+.empty-state {
+    padding: 40px 20px;
+}
+
+.empty-state i {
+    font-size: 56px;
+    margin-bottom: 15px;
+}
+
+.empty-state h2 {
+    margin-bottom: 10px;
+    color: var(--dark);
+    font-size: 20px;
+}
+
+/* ── Back Button ────────────────────────────────────────────── */
+.back-btn {
+    background-color: var(--warning);
+    color: white;
+}
+
+.back-btn:hover {
+    background-color: #e67e22;
+}
+
+/* ── Auth Buttons (shared view) ─────────────────────────────── */
+.btn-login {
+    background-color: transparent;
+    color: var(--primary);
+    border: 2px solid var(--primary);
+}
+
+.btn-login:hover {
+    background-color: rgba(74, 111, 165, 0.08);
+}
+
+.btn-signup {
+    background-color: var(--primary);
+    color: white;
+}
+
+.btn-signup:hover {
+    background-color: var(--secondary);
+}
+
+.shared-logo-sub {
+    font-size: 12px;
+    font-weight: 400;
+    color: #999;
+    margin-left: 4px;
+    letter-spacing: 0.3px;
+}
+
+/* ── View Mode Badge ────────────────────────────────────────── */
+.view-mode-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin: 0 auto 14px;
+    width: fit-content;
+    display: flex;
+}
+
+.view-mode-badge.current {
+    background-color: rgba(74, 111, 165, 0.12);
+    color: var(--primary);
+}
+
+.view-mode-badge.current.live {
+    background-color: rgba(46, 204, 113, 0.12);
+    color: #27ae60;
+}
+
+.view-mode-badge.reference {
+    background-color: rgba(255, 126, 95, 0.12);
+    color: var(--accent);
+}
+
+/* ── Live Dot ───────────────────────────────────────────────── */
+.live-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #2ecc71;
+    flex-shrink: 0;
+    animation: livePulse 1.5s ease-in-out infinite;
+}
+
+@keyframes livePulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.7); }
+}
+
+/* ── Permission Error ───────────────────────────────────────── */
+.permission-error {
+    text-align: center;
+    padding: 30px 20px;
+    background-color: #fff9f0;
+    border: 1px solid #f39c12;
+    border-radius: var(--border-radius);
+    color: var(--dark);
+}
+
+.permission-error i {
+    font-size: 40px;
+    color: #f39c12;
+    display: block;
+    margin-bottom: 12px;
+}
+
+.permission-error h2 {
+    margin-bottom: 8px;
+    font-size: 18px;
+}
+
+.permission-error code {
+    display: block;
+    margin: 12px auto;
+    background: #f4f4f4;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 12px;
+    text-align: left;
+    max-width: 420px;
+    white-space: pre;
+    overflow-x: auto;
+}
+
+/* ── Reference Notice ───────────────────────────────────────── */
+.ref-notice {
+    text-align: center;
+    font-size: 12px;
+    color: #999;
+    margin-top: 10px;
+    padding: 8px;
+    background-color: #fafafa;
+    border-radius: 8px;
+    border: 1px dashed #ddd;
+}
+
+.ref-notice i {
+    margin-right: 4px;
+}
+
+/* ── Saving Indicator ───────────────────────────────────────── */
+.saving-indicator {
+    position: absolute;
+    right: 12px;
+    color: var(--success);
+    opacity: 0;
+    transition: var(--transition);
+    font-size: 14px;
+}
+
+.saving-indicator.show {
+    opacity: 1;
+    animation: pulse 1s ease;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}
+
+/* ── Completion Banner ──────────────────────────────────────── */
+.completion-banner {
+    text-align: center;
+    padding: 30px 20px;
+    background: linear-gradient(135deg, #2ecc71, #27ae60);
+    color: white;
+    border-radius: var(--border-radius);
+    margin-top: 15px;
+    animation: popIn 0.4s ease;
+}
+
+.completion-banner.reusable {
+    background: linear-gradient(135deg, #4a6fa5, #6b8cbc);
+}
+
+.completion-banner i {
+    font-size: 52px;
+    display: block;
+    margin-bottom: 12px;
+}
+
+.completion-banner h2 {
+    font-size: 22px;
+    margin-bottom: 8px;
+}
+
+.completion-banner p {
+    font-size: 14px;
+    opacity: 0.9;
+}
+
+.reset-time {
+    display: inline-block;
+    margin-top: 12px;
+    background: rgba(255, 255, 255, 0.25);
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+@keyframes popIn {
+    0% { transform: scale(0.8); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+/* ── Mobile: 480px ──────────────────────────────────────────── */
+@media (max-width: 480px) {
+    .container {
+        padding: 10px;
+    }
+
+    header {
+        padding: 10px 0;
+        margin-bottom: 10px;
+    }
+
+    .header-content {
+        padding: 0 10px;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
+
+    .logo {
+        justify-content: center;
+        font-size: 18px;
+    }
+
+    .nav-buttons {
+        justify-content: center;
+    }
+
+    .btn {
+        flex: 1;
+        justify-content: center;
+        padding: 10px;
+        font-size: 13px;
+    }
+
+    .card {
+        padding: 15px;
+        margin-bottom: 10px;
+    }
+
+    .card-title {
+        font-size: 20px;
+        margin-bottom: 12px;
+    }
+
+    .note-content {
+        font-size: 15px;
+    }
+
+    .checkbox-item {
+        padding: 8px 10px;
+    }
+
+    .empty-state {
+        padding: 30px 15px;
+    }
+
+    .empty-state i {
+        font-size: 48px;
+    }
+
+    .notification {
+        top: 10px;
+        right: 10px;
+        left: 10px;
+        padding: 10px 12px;
+        font-size: 14px;
+    }
+}

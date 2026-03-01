@@ -1,0 +1,166 @@
+/* ============================================================
+   LOGIN PAGE — Styles specific to the login / sign-up form
+   ============================================================ */
+
+/* ── Body Override ──────────────────────────────────────────── */
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 15px;
+}
+
+/* ── Login Container ────────────────────────────────────────── */
+.login-container {
+    background-color: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    padding: 30px;
+    width: 100%;
+    max-width: 400px;
+}
+
+/* ── Logo Override ──────────────────────────────────────────── */
+.logo {
+    text-align: center;
+    font-size: 26px;
+    font-weight: bold;
+    color: var(--primary);
+    margin-bottom: 25px;
+    /* Override global flex layout for login page */
+    display: block;
+}
+
+/* ── Form Overrides ─────────────────────────────────────────── */
+.form-group {
+    margin-bottom: 18px;
+}
+
+.form-label {
+    margin-bottom: 6px;
+}
+
+.form-input {
+    padding: 12px 15px;
+    font-size: 16px;
+    transition: border-color 0.3s ease;
+}
+
+/* ── Button Overrides (full-width) ──────────────────────────── */
+.btn {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 10px;
+    font-size: 16px;
+    /* Override global flex for login page buttons */
+    justify-content: center;
+}
+
+/* ── Google Sign-in ─────────────────────────────────────────── */
+.btn-google {
+    background-color: #4285F4;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.btn-google:hover {
+    background-color: #357ae8;
+}
+
+/* ── Divider ────────────────────────────────────────────────── */
+.divider {
+    text-align: center;
+    margin: 20px 0;
+    position: relative;
+}
+
+.divider::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background-color: #ddd;
+}
+
+.divider span {
+    background-color: white;
+    padding: 0 15px;
+    color: #777;
+    font-size: 14px;
+}
+
+/* ── Auth Toggle ────────────────────────────────────────────── */
+.toggle-auth {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 14px;
+}
+
+.toggle-auth a {
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+/* ── Error Message ──────────────────────────────────────────── */
+.error-message {
+    color: #e74c3c;
+    margin-top: 10px;
+    text-align: center;
+    font-size: 14px;
+}
+
+/* ── Mobile: 480px ──────────────────────────────────────────── */
+@media (max-width: 480px) {
+    body {
+        padding: 10px;
+    }
+
+    .login-container {
+        padding: 25px 20px;
+    }
+
+    .logo {
+        font-size: 24px;
+        margin-bottom: 20px;
+    }
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    .form-input {
+        padding: 10px 12px;
+        font-size: 15px;
+    }
+
+    .btn {
+        padding: 10px;
+        font-size: 15px;
+    }
+
+    .divider {
+        margin: 15px 0;
+    }
+
+    .toggle-auth {
+        margin-top: 15px;
+    }
+}
+
+/* ── Mobile: 320px ──────────────────────────────────────────── */
+@media (max-width: 320px) {
+    .login-container {
+        padding: 20px 15px;
+    }
+
+    .logo {
+        font-size: 22px;
+    }
+}
