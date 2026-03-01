@@ -1223,7 +1223,7 @@
             document.querySelectorAll('.share-note').forEach(button => {
                 button.addEventListener('click', (e) => {
                     const noteId = e.target.closest('.action-btn').getAttribute('data-id');
-                    shareItem('note', notes[noteId]);
+                    shareItem('note', noteId, notes[noteId]);
                 });
             });
         }
@@ -1302,7 +1302,7 @@
             document.querySelectorAll('.share-checklist').forEach(button => {
                 button.addEventListener('click', (e) => {
                     const checklistId = e.target.closest('.action-btn').getAttribute('data-id');
-                    shareItem('checklist', checklists[checklistId]);
+                    shareItem('checklist', checklistId, checklists[checklistId]);
                 });
             });
         }
@@ -1766,14 +1766,15 @@
             }, 3000);
         }
 
-        // Share item function - generates Current View and Reference View links
-        function shareItem(itemType, item) {
+        // Share item function - generates Current View (live) and Reference View (static) links
+        function shareItem(itemType, itemId, item) {
             if (!item) {
                 showNotification('Item not found', 'error');
                 return;
             }
 
             const baseUrl = window.location.href.split('?')[0].replace(/[^\/]*$/, '') + 'view.html?shared=';
+            const userId = auth.currentUser.uid;
 
             function encodePayload(payload) {
                 const jsonStr = JSON.stringify(payload);
@@ -1783,35 +1784,36 @@
             const container = document.getElementById('share-links-container');
             container.innerHTML = '';
 
+            // Current View: live Firebase reference — viewer always sees real-time owner data
+            const currentPayload = {
+                viewMode: 'current-live',
+                type: itemType,
+                userId: userId,
+                itemId: itemId
+            };
+
             if (itemType === 'note') {
-                // Notes: only Current View
-                const payload = { type: 'note', viewMode: 'current', title: item.title, content: item.content };
-                const url = baseUrl + encodePayload(payload);
                 container.innerHTML = buildShareCard(
-                    'current', url,
+                    'current', baseUrl + encodePayload(currentPayload),
                     '<i class="fas fa-eye"></i> Current View',
-                    'Shows the note content as-is.'
+                    'Viewer sees your note in real-time. Any edits you make appear instantly on their screen.'
                 );
             } else {
-                // Checklists: Current View + Reference View
-                const currentPayload = {
-                    type: 'checklist', viewMode: 'current',
-                    title: item.title,
-                    items: item.items
-                };
+                // Checklists: Current View (live) + Reference View (static blank template)
                 const refItems = (item.items || []).map(i => ({ text: i.text, checked: false }));
                 const referencePayload = {
-                    type: 'checklist', viewMode: 'reference',
+                    viewMode: 'reference',
+                    type: 'checklist',
                     title: item.title,
                     items: refItems
                 };
                 container.innerHTML =
                     buildShareCard('current', baseUrl + encodePayload(currentPayload),
-                        '<i class="fas fa-eye"></i> Current View',
-                        "Viewers see the owner's live progress with checked items crossed out. Read-only.") +
+                        '<i class="fas fa-circle" style="color:#2ecc71;font-size:10px;"></i> Current View',
+                        'Viewer sees your live progress in real-time. Checked items appear crossed out as you check them.') +
                     buildShareCard('reference', baseUrl + encodePayload(referencePayload),
                         '<i class="fas fa-list-check"></i> Reference View',
-                        'Viewers get a blank template they can check off themselves. Resets on page refresh — nothing saves.');
+                        'Viewer gets a blank template they can check off themselves. Resets on page refresh — nothing saves.');
             }
 
             document.getElementById('share-modal').style.display = 'flex';
