@@ -772,6 +772,32 @@
                 font-size: 12px;
             }
         }
+
+        .reusable-badge {
+            display: inline-block;
+            background-color: var(--accent);
+            color: white;
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-left: 8px;
+            font-weight: 600;
+            vertical-align: middle;
+        }
+
+        .share-link-input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            font-size: 13px;
+            background-color: #f9f9f9;
+            word-break: break-all;
+        }
+
+        .share-btn {
+            color: var(--success) !important;
+        }
     </style>
 </head>
 <body>
@@ -925,7 +951,7 @@
                             <option value="infinite">Infinite</option>
                         </select>
                     </div>
-                    <div class="form-group" id="days-selector-container">
+                    <div class="form-group" id="days-selector-container" style="display: none;">
                         <label class="form-label">Select days</label>
                         <div class="days-selector">
                             <input type="checkbox" id="day-monday" class="day-checkbox" value="monday">
@@ -970,6 +996,25 @@
             <div class="form-group">
                 <button class="btn btn-success" id="confirm-save-quick">
                     <i class="fas fa-save"></i> Save
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for sharing -->
+    <div class="modal" id="share-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title"><i class="fas fa-share-alt"></i> Share Link</h3>
+                <button class="close-modal" id="close-share-modal">&times;</button>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Anyone with this link can view (read-only):</label>
+                <input type="text" class="share-link-input" id="share-link" readonly>
+            </div>
+            <div class="form-group">
+                <button class="btn btn-success" id="copy-share-link" style="width: 100%;">
+                    <i class="fas fa-copy"></i> Copy Link
                 </button>
             </div>
         </div>
@@ -1027,6 +1072,7 @@
             const checklistsRef = ref(database, 'users/' + userId + '/checklists');
             onValue(checklistsRef, (snapshot) => {
                 const checklists = snapshot.val();
+                checkAndResetReusableChecklists(userId, checklists);
                 displayChecklists(checklists);
                 hideLoader();
             });
@@ -1099,6 +1145,9 @@
                             <button class="action-btn delete-note" data-id="${key}">
                                 <i class="fas fa-trash"></i> Delete
                             </button>
+                            <button class="action-btn share-btn share-note" data-id="${key}">
+                                <i class="fas fa-share-alt"></i> Share
+                            </button>
                         </div>
                     </div>
                     <div class="note-content">${note.content}</div>
@@ -1131,6 +1180,14 @@
                     window.location.href = 'view.html';
                 });
             });
+
+            // Add event listeners for share buttons (notes)
+            document.querySelectorAll('.share-note').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const noteId = e.target.closest('.action-btn').getAttribute('data-id');
+                    shareItem('note', notes[noteId]);
+                });
+            });
         }
 
         // Display checklists in the UI (only titles)
@@ -1154,7 +1211,7 @@
                 checklistElement.className = 'note-item';
                 checklistElement.innerHTML = `
                     <div class="note-title">
-                        <span class="note-title-text">${checklist.title}</span>
+                        <span class="note-title-text">${checklist.title}${checklist.isReusable ? ' <span class="reusable-badge"><i class="fas fa-sync-alt"></i> Reusable</span>' : ''}</span>
                         <div class="note-actions">
                             <button class="action-btn view-btn" data-id="${key}" data-type="checklist">
                                 <i class="fas fa-eye"></i> View
@@ -1164,6 +1221,9 @@
                             </button>
                             <button class="action-btn delete-checklist" data-id="${key}">
                                 <i class="fas fa-trash"></i> Delete
+                            </button>
+                            <button class="action-btn share-btn share-checklist" data-id="${key}">
+                                <i class="fas fa-share-alt"></i> Share
                             </button>
                         </div>
                     </div>
@@ -1197,6 +1257,14 @@
                 button.addEventListener('click', (e) => {
                     const checklistId = e.target.closest('.action-btn').getAttribute('data-id');
                     deleteChecklist(checklistId);
+                });
+            });
+
+            // Add event listeners for share buttons (checklists)
+            document.querySelectorAll('.share-checklist').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const checklistId = e.target.closest('.action-btn').getAttribute('data-id');
+                    shareItem('checklist', checklists[checklistId]);
                 });
             });
         }
@@ -1300,6 +1368,9 @@
             document.getElementById('checklist-items').value = '';
             document.getElementById('reusable-no').checked = true;
             document.getElementById('reusable-options').style.display = 'none';
+            document.getElementById('reuse-frequency').value = 'daily';
+            document.getElementById('days-selector-container').style.display = 'none';
+            document.querySelectorAll('.day-checkbox').forEach(cb => cb.checked = false);
             currentEditingChecklistId = null;
             
             const saveButton = document.getElementById('save-checklist');
@@ -1319,10 +1390,19 @@
                 const reusableOptions = document.getElementById('reusable-options');
                 if (document.getElementById('reusable-yes').checked) {
                     reusableOptions.style.display = 'block';
+                    // Show/hide days based on current frequency
+                    const freq = document.getElementById('reuse-frequency').value;
+                    document.getElementById('days-selector-container').style.display = freq === 'weekly' ? 'block' : 'none';
                 } else {
                     reusableOptions.style.display = 'none';
                 }
             });
+        });
+
+        // Toggle days selector based on frequency
+        document.getElementById('reuse-frequency').addEventListener('change', () => {
+            const frequency = document.getElementById('reuse-frequency').value;
+            document.getElementById('days-selector-container').style.display = frequency === 'weekly' ? 'block' : 'none';
         });
 
         function saveNewChecklist() {
@@ -1379,10 +1459,14 @@
             document.getElementById('checklist-title').value = checklist.title;
             document.getElementById('checklist-items').value = checklist.items.map(item => item.text).join('\n');
             
-            if (checklist.isReusable) {
+            if (checklist.isReusable && checklist.reusableOptions) {
                 document.getElementById('reusable-yes').checked = true;
                 document.getElementById('reusable-options').style.display = 'block';
-                document.getElementById('reuse-frequency').value = checklist.reusableOptions.frequency;
+                document.getElementById('reuse-frequency').value = checklist.reusableOptions.frequency || 'daily';
+                
+                // Show/hide days selector based on frequency
+                const freq = checklist.reusableOptions.frequency || 'daily';
+                document.getElementById('days-selector-container').style.display = freq === 'weekly' ? 'block' : 'none';
                 
                 // Reset day checkboxes
                 document.querySelectorAll('.day-checkbox').forEach(checkbox => {
@@ -1642,6 +1726,85 @@
             setTimeout(() => {
                 notification.remove();
             }, 3000);
+        }
+
+        // Share item function - encodes data in URL for no-login sharing
+        function shareItem(itemType, item) {
+            if (!item) {
+                showNotification('Item not found', 'error');
+                return;
+            }
+            const shareData = { type: itemType, title: item.title };
+            if (itemType === 'note') {
+                shareData.content = item.content;
+            } else {
+                shareData.items = item.items;
+            }
+            try {
+                const jsonStr = JSON.stringify(shareData);
+                const base64 = btoa(Array.from(new TextEncoder().encode(jsonStr), b => String.fromCharCode(b)).join(''));
+                const baseUrl = window.location.href.split('?')[0].replace(/[^\/]*$/, '');
+                const shareUrl = baseUrl + 'view.html?shared=' + encodeURIComponent(base64);
+                document.getElementById('share-link').value = shareUrl;
+                document.getElementById('share-modal').style.display = 'flex';
+            } catch (e) {
+                console.error('Share error:', e);
+                showNotification('Error creating share link', 'error');
+            }
+        }
+
+        // Close share modal
+        document.getElementById('close-share-modal').addEventListener('click', () => {
+            document.getElementById('share-modal').style.display = 'none';
+        });
+
+        // Copy share link
+        document.getElementById('copy-share-link').addEventListener('click', () => {
+            const linkInput = document.getElementById('share-link');
+            linkInput.select();
+            linkInput.setSelectionRange(0, 99999);
+            navigator.clipboard.writeText(linkInput.value).then(() => {
+                showNotification('Link copied to clipboard!', 'success');
+            }).catch(() => {
+                document.execCommand('copy');
+                showNotification('Link copied!', 'success');
+            });
+        });
+
+        // Auto-reset reusable checklists based on time elapsed since completion
+        function checkAndResetReusableChecklists(userId, checklists) {
+            if (!checklists) return;
+            const now = Date.now();
+            // Duration in ms for each frequency
+            const RESET_DURATION = {
+                daily:   24 * 60 * 60 * 1000,       // 24 hours
+                weekly:  7  * 24 * 60 * 60 * 1000,  // 7 days
+                monthly: 30 * 24 * 60 * 60 * 1000   // 30 days
+            };
+
+            Object.keys(checklists).forEach(key => {
+                const checklist = checklists[key];
+                if (!checklist.isReusable || !checklist.reusableOptions) return;
+
+                const freq = checklist.reusableOptions.frequency;
+                const duration = RESET_DURATION[freq];
+                if (!duration) return; // 'infinite' — never auto-resets
+
+                // Only reset if the checklist was actually completed (completedAt set)
+                const completedAt = checklist.completedAt;
+                if (!completedAt) return;
+
+                // Check if enough time has passed since completion
+                if (now - completedAt >= duration) {
+                    const resetItems = checklist.items.map(item => ({ text: item.text, checked: false }));
+                    const checklistRef = ref(database, `users/${userId}/checklists/${key}`);
+                    update(checklistRef, {
+                        items: resetItems,
+                        completedAt: null,
+                        lastResetDate: new Date().toISOString()
+                    });
+                }
+            });
         }
     </script>
 </body>
