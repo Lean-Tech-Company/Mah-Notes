@@ -24,12 +24,14 @@ body {
 /* ── Logo Override ──────────────────────────────────────────── */
 .logo {
     text-align: center;
-    font-size: 26px;
-    font-weight: bold;
-    color: var(--primary);
     margin-bottom: 25px;
     /* Override global flex layout for login page */
     display: block;
+}
+
+.logo .logo-img {
+    height: 90px;
+    margin: 0 auto;
 }
 
 /* ── Form Overrides ─────────────────────────────────────────── */

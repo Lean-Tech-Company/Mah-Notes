@@ -59,16 +59,16 @@ header {
 
 /* ── Logo ───────────────────────────────────────────────────── */
 .logo {
-    font-size: 22px;
-    font-weight: bold;
-    color: var(--primary);
     display: flex;
     align-items: center;
     gap: 8px;
 }
 
-.logo i {
-    font-size: 26px;
+.logo-img {
+    height: 38px;
+    width: auto;
+    object-fit: contain;
+    display: block;
 }
 
 /* ── Buttons ────────────────────────────────────────────────── */

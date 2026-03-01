@@ -22,7 +22,7 @@ const sharedParam = urlParams.get('shared');
 
 function setupSharedHeader() {
     document.getElementById('header-logo').innerHTML =
-        '<i class="fas fa-sticky-note"></i> My Notes <span class="shared-logo-sub">· shared</span>';
+        '<img src="images/logo.png" alt="My Notes" class="logo-img"> <span class="shared-logo-sub">· shared</span>';
     document.getElementById('back-btn').style.display = 'none';
     document.getElementById('login-btn').style.display = 'flex';
     document.getElementById('signup-btn').style.display = 'flex';
