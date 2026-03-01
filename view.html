@@ -285,8 +285,51 @@
             100% { transform: scale(1); }
         }
 
-        /* Mobile Responsive Styles */
-        @media (max-width: 480px) {
+        .completion-banner {
+            text-align: center;
+            padding: 30px 20px;
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            color: white;
+            border-radius: var(--border-radius);
+            margin-top: 15px;
+            animation: popIn 0.4s ease;
+        }
+
+        .completion-banner.reusable {
+            background: linear-gradient(135deg, #4a6fa5, #6b8cbc);
+        }
+
+        .completion-banner i {
+            font-size: 52px;
+            display: block;
+            margin-bottom: 12px;
+        }
+
+        .completion-banner h2 {
+            font-size: 22px;
+            margin-bottom: 8px;
+        }
+
+        .completion-banner p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .reset-time {
+            display: inline-block;
+            margin-top: 12px;
+            background: rgba(255,255,255,0.25);
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
             .container {
                 padding: 10px;
             }
@@ -385,7 +428,7 @@
     <script type="module">
         // Import the functions you need from the SDKs you need
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
-        import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
+        import { getDatabase, ref, onValue, update, remove } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
 
         // Your web app's Firebase configuration
@@ -403,16 +446,35 @@
         const database = getDatabase(app);
         const auth = getAuth(app);
 
-        // Check if user is logged in
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                // User is signed in
-                loadSpecificItem(user.uid);
-            } else {
-                // User is signed out, redirect to login page
-                window.location.href = 'login.html';
+        // Check URL parameters for shared view
+        const urlParams = new URLSearchParams(window.location.search);
+        const sharedParam = urlParams.get('shared');
+
+        if (sharedParam) {
+            // Shared view mode - no login required
+            try {
+                const decoded = new TextDecoder().decode(Uint8Array.from(atob(decodeURIComponent(sharedParam)), c => c.charCodeAt(0)));
+                const sharedItem = JSON.parse(decoded);
+                displaySharedItem(sharedItem);
+                // Update header for shared view
+                document.querySelector('.logo').innerHTML = '<i class="fas fa-share-alt"></i> Shared View';
+                document.getElementById('back-btn').style.display = 'none';
+            } catch (e) {
+                console.error('Share decode error:', e);
+                showItemNotFound();
             }
-        });
+        } else {
+            // Check if user is logged in
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    // User is signed in
+                    loadSpecificItem(user.uid);
+                } else {
+                    // User is signed out, redirect to login page
+                    window.location.href = 'login.html';
+                }
+            });
+        }
 
         // Load specific item based on what was clicked in index.html
         function loadSpecificItem(userId) {
@@ -465,16 +527,16 @@
 
                 // Add event listeners for checklist items in view mode
                 const checklistContainer = document.getElementById('checklist-items');
-                checklistContainer.querySelectorAll('.checkbox-item').forEach(item => {
-                    const checkbox = item.querySelector('input[type="checkbox"]');
-                    const savingIndicator = item.querySelector('.saving-indicator');
+                checklistContainer.querySelectorAll('.checkbox-item').forEach(rowEl => {
+                    const checkbox = rowEl.querySelector('input[type="checkbox"]');
+                    const savingIndicator = rowEl.querySelector('.saving-indicator');
                     
                     checkbox.addEventListener('change', async () => {
-                        const itemIndex = parseInt(item.getAttribute('data-index'));
+                        const itemIndex = parseInt(rowEl.getAttribute('data-index'));
                         const isChecked = checkbox.checked;
                         
                         // Update UI immediately
-                        item.classList.toggle('checked', isChecked);
+                        rowEl.classList.toggle('checked', isChecked);
                         
                         // Show saving indicator
                         savingIndicator.classList.add('show');
@@ -483,23 +545,59 @@
                         showLoader();
                         
                         try {
-                            // Save to Firebase - FIXED: Use set instead of update for boolean values
                             await toggleChecklistItem(itemId, itemIndex, isChecked, userId);
                             
-                            // Hide saving indicator after a delay
                             setTimeout(() => {
                                 savingIndicator.classList.remove('show');
                             }, 1000);
-                            
-                            showNotification('Checklist updated!', 'success');
+
+                            // Check if ALL items are now checked
+                            const allCheckboxes = checklistContainer.querySelectorAll('input[type="checkbox"]');
+                            const allChecked = Array.from(allCheckboxes).every(cb => cb.checked);
+
+                            if (allChecked && !item.isReusable) {
+                                // One-time-use: show completion banner then delete
+                                const card = document.querySelector('.card');
+                                card.innerHTML = `
+                                    <div class="completion-banner">
+                                        <i class="fas fa-check-circle"></i>
+                                        <h2>All Done!</h2>
+                                        <p>This one-time checklist is complete and will be removed.</p>
+                                    </div>
+                                `;
+                                // Delete from Firebase after short delay
+                                setTimeout(async () => {
+                                    const checklistRef = ref(database, `users/${userId}/checklists/${itemId}`);
+                                    await remove(checklistRef);
+                                    window.location.href = 'index.html';
+                                }, 2200);
+                            } else if (allChecked && item.isReusable) {
+                                // Reusable: save completedAt, show reset banner, no delete
+                                const completedAt = Date.now();
+                                const checklistRef = ref(database, `users/${userId}/checklists/${itemId}`);
+                                await update(checklistRef, { completedAt });
+
+                                const freq = (item.reusableOptions && item.reusableOptions.frequency) || 'daily';
+                                const resetLabel = getResetLabel(freq, completedAt);
+
+                                const card = document.querySelector('.card');
+                                card.innerHTML = `
+                                    <div class="completion-banner reusable">
+                                        <i class="fas fa-sync-alt"></i>
+                                        <h2>All Done!</h2>
+                                        <p>This checklist will automatically reset.</p>
+                                        <div class="reset-time"><i class="fas fa-clock"></i> Resets ${resetLabel}</div>
+                                    </div>
+                                `;
+                            } else {
+                                showNotification('Checklist updated!', 'success');
+                            }
                         } catch (error) {
                             console.error('Save error:', error);
-                            // Revert UI if save fails
                             checkbox.checked = !isChecked;
-                            item.classList.toggle('checked', !isChecked);
+                            rowEl.classList.toggle('checked', !isChecked);
                             showNotification('Failed to save changes: ' + error.message, 'error');
                         } finally {
-                            // Hide loader
                             hideLoader();
                         }
                     });
@@ -556,6 +654,42 @@
             }, 3000);
         }
 
+        // Display shared item in read-only mode (no checkboxes)
+        function displaySharedItem(item) {
+            const contentArea = document.getElementById('content-area');
+            if (item.type === 'note') {
+                contentArea.innerHTML = `
+                    <div class="card">
+                        <h1 class="card-title">${escapeHtml(item.title)}</h1>
+                        <div class="note-content">${escapeHtml(item.content || '')}</div>
+                    </div>
+                `;
+            } else if (item.type === 'checklist') {
+                contentArea.innerHTML = `
+                    <div class="card">
+                        <h1 class="card-title">${escapeHtml(item.title)}</h1>
+                        <div class="checkbox-list">
+                            ${(item.items || []).map(checkItem => `
+                                <div class="checkbox-item" style="cursor: default;">
+                                    <span class="item-text" style="padding-left: 8px;">${escapeHtml(checkItem.text)}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            } else {
+                showItemNotFound();
+            }
+        }
+
+        // Escape HTML to prevent XSS from shared links
+        function escapeHtml(str) {
+            if (!str) return '';
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
         // Show message when no item is selected
         function showNoItemSelected() {
             const contentArea = document.getElementById('content-area');
@@ -584,6 +718,28 @@
         document.getElementById('back-btn').addEventListener('click', () => {
             window.location.href = 'index.html';
         });
+
+        // Returns a human-readable reset label given frequency and completedAt timestamp
+        function getResetLabel(freq, completedAt) {
+            const MS = { daily: 86400000, weekly: 604800000, monthly: 2592000000 };
+            const duration = MS[freq];
+            if (!duration) return 'on next use';
+            const resetAt = new Date(completedAt + duration);
+            return 'in ' + formatCountdown(resetAt - Date.now()) + ' (' + resetAt.toLocaleString() + ')';
+        }
+
+        // Formats milliseconds into a readable countdown string
+        function formatCountdown(ms) {
+            if (ms <= 0) return 'shortly';
+            const hours = Math.floor(ms / 3600000);
+            const mins = Math.floor((ms % 3600000) / 60000);
+            if (hours >= 24) {
+                const days = Math.floor(hours / 24);
+                return days + ' day' + (days !== 1 ? 's' : '');
+            }
+            if (hours > 0) return hours + 'h ' + mins + 'm';
+            return mins + 'm';
+        }
     </script>
 </body>
 </html>
