@@ -795,6 +795,50 @@
             word-break: break-all;
         }
 
+        .share-view-card {
+            border: 1px solid #e0e7ff;
+            border-radius: var(--border-radius);
+            padding: 14px;
+            margin-bottom: 12px;
+            background-color: #f8faff;
+        }
+
+        .share-view-card:last-child {
+            margin-bottom: 0;
+        }
+
+        .share-view-title {
+            font-weight: 700;
+            font-size: 14px;
+            color: var(--primary);
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .share-view-desc {
+            font-size: 12px;
+            color: #777;
+            margin-bottom: 10px;
+        }
+
+        .share-copy-row {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .share-copy-row .share-link-input {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .share-copy-btn {
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
         .share-btn {
             color: var(--success) !important;
         }
@@ -1003,19 +1047,13 @@
 
     <!-- Modal for sharing -->
     <div class="modal" id="share-modal">
-        <div class="modal-content">
+        <div class="modal-content" style="max-width: 560px;">
             <div class="modal-header">
-                <h3 class="modal-title"><i class="fas fa-share-alt"></i> Share Link</h3>
+                <h3 class="modal-title"><i class="fas fa-share-alt"></i> Share</h3>
                 <button class="close-modal" id="close-share-modal">&times;</button>
             </div>
-            <div class="form-group">
-                <label class="form-label">Anyone with this link can view (read-only):</label>
-                <input type="text" class="share-link-input" id="share-link" readonly>
-            </div>
-            <div class="form-group">
-                <button class="btn btn-success" id="copy-share-link" style="width: 100%;">
-                    <i class="fas fa-copy"></i> Copy Link
-                </button>
+            <div id="share-links-container">
+                <!-- Filled dynamically by shareItem() -->
             </div>
         </div>
     </div>
@@ -1728,47 +1766,91 @@
             }, 3000);
         }
 
-        // Share item function - encodes data in URL for no-login sharing
+        // Share item function - generates Current View and Reference View links
         function shareItem(itemType, item) {
             if (!item) {
                 showNotification('Item not found', 'error');
                 return;
             }
-            const shareData = { type: itemType, title: item.title };
+
+            const baseUrl = window.location.href.split('?')[0].replace(/[^\/]*$/, '') + 'view.html?shared=';
+
+            function encodePayload(payload) {
+                const jsonStr = JSON.stringify(payload);
+                return encodeURIComponent(btoa(Array.from(new TextEncoder().encode(jsonStr), b => String.fromCharCode(b)).join('')));
+            }
+
+            const container = document.getElementById('share-links-container');
+            container.innerHTML = '';
+
             if (itemType === 'note') {
-                shareData.content = item.content;
+                // Notes: only Current View
+                const payload = { type: 'note', viewMode: 'current', title: item.title, content: item.content };
+                const url = baseUrl + encodePayload(payload);
+                container.innerHTML = buildShareCard(
+                    'current', url,
+                    '<i class="fas fa-eye"></i> Current View',
+                    'Shows the note content as-is.'
+                );
             } else {
-                shareData.items = item.items;
+                // Checklists: Current View + Reference View
+                const currentPayload = {
+                    type: 'checklist', viewMode: 'current',
+                    title: item.title,
+                    items: item.items
+                };
+                const refItems = (item.items || []).map(i => ({ text: i.text, checked: false }));
+                const referencePayload = {
+                    type: 'checklist', viewMode: 'reference',
+                    title: item.title,
+                    items: refItems
+                };
+                container.innerHTML =
+                    buildShareCard('current', baseUrl + encodePayload(currentPayload),
+                        '<i class="fas fa-eye"></i> Current View',
+                        "Viewers see the owner's live progress with checked items crossed out. Read-only.") +
+                    buildShareCard('reference', baseUrl + encodePayload(referencePayload),
+                        '<i class="fas fa-list-check"></i> Reference View',
+                        'Viewers get a blank template they can check off themselves. Resets on page refresh — nothing saves.');
             }
-            try {
-                const jsonStr = JSON.stringify(shareData);
-                const base64 = btoa(Array.from(new TextEncoder().encode(jsonStr), b => String.fromCharCode(b)).join(''));
-                const baseUrl = window.location.href.split('?')[0].replace(/[^\/]*$/, '');
-                const shareUrl = baseUrl + 'view.html?shared=' + encodeURIComponent(base64);
-                document.getElementById('share-link').value = shareUrl;
-                document.getElementById('share-modal').style.display = 'flex';
-            } catch (e) {
-                console.error('Share error:', e);
-                showNotification('Error creating share link', 'error');
-            }
+
+            document.getElementById('share-modal').style.display = 'flex';
         }
+
+        function buildShareCard(mode, url, titleHtml, desc) {
+            const accent = mode === 'reference' ? 'var(--accent)' : 'var(--primary)';
+            return `
+                <div class="share-view-card">
+                    <div class="share-view-title" style="color: ${accent};">${titleHtml}</div>
+                    <div class="share-view-desc">${desc}</div>
+                    <div class="share-copy-row">
+                        <input type="text" class="share-link-input" value="${url}" readonly>
+                        <button class="btn btn-success share-copy-btn" onclick="copyShareLink(this)">
+                            <i class="fas fa-copy"></i> Copy
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Expose globally so inline onclick works inside module
+        window.copyShareLink = function(btn) {
+            const input = btn.closest('.share-copy-row').querySelector('.share-link-input');
+            input.select();
+            input.setSelectionRange(0, 99999);
+            navigator.clipboard.writeText(input.value).then(() => {
+                btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+                setTimeout(() => { btn.innerHTML = '<i class="fas fa-copy"></i> Copy'; }, 2000);
+            }).catch(() => {
+                document.execCommand('copy');
+                btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+                setTimeout(() => { btn.innerHTML = '<i class="fas fa-copy"></i> Copy'; }, 2000);
+            });
+        };
 
         // Close share modal
         document.getElementById('close-share-modal').addEventListener('click', () => {
             document.getElementById('share-modal').style.display = 'none';
-        });
-
-        // Copy share link
-        document.getElementById('copy-share-link').addEventListener('click', () => {
-            const linkInput = document.getElementById('share-link');
-            linkInput.select();
-            linkInput.setSelectionRange(0, 99999);
-            navigator.clipboard.writeText(linkInput.value).then(() => {
-                showNotification('Link copied to clipboard!', 'success');
-            }).catch(() => {
-                document.execCommand('copy');
-                showNotification('Link copied!', 'success');
-            });
         });
 
         // Auto-reset reusable checklists based on time elapsed since completion
