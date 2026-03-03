@@ -17,29 +17,38 @@ const provider = new GoogleAuthProvider();
 let currentQuickType = 'note';
 let currentEditingChecklistId = null;
 
-// ── Privacy Mode Toggle ──────────────────────────────────────
-(function initPrivacyMode() {
+// ── Privacy Mode Toggle (hide-all / show-all via Firebase) ─────────────────
+function updatePrivacyToggleBtn() {
     const btn = document.getElementById('privacy-toggle-btn');
-    const isOn = localStorage.getItem('privacyMode') === 'true';
-    if (isOn) {
-        document.body.classList.add('privacy-mode');
-        btn.classList.add('active');
-        btn.title = 'Content hidden — click to show';
-        btn.innerHTML = '<i class="fas fa-eye"></i>';
-    }
-    btn.addEventListener('click', () => {
-        const nowOn = document.body.classList.toggle('privacy-mode');
-        btn.classList.toggle('active', nowOn);
-        if (nowOn) {
-            btn.title = 'Content hidden — click to show';
-            btn.innerHTML = '<i class="fas fa-eye"></i>';
-        } else {
-            btn.title = 'Toggle content visibility';
-            btn.innerHTML = '<i class="fas fa-eye-slash"></i>';
-        }
-        localStorage.setItem('privacyMode', nowOn);
+    if (!btn) return;
+    const allIds = [...document.querySelectorAll('.item-hide-btn')].map(b => b.getAttribute('data-id'));
+    const allHidden = allIds.length > 0 && allIds.every(id => hiddenItemsCache.has(id));
+    btn.classList.toggle('active', allHidden);
+    btn.title = allHidden ? 'Show all content' : 'Hide all content';
+    btn.innerHTML = allHidden ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>';
+}
+
+function wirePrivacyToggleBtn() {
+    const btn = document.getElementById('privacy-toggle-btn');
+    if (!btn) return;
+    btn.addEventListener('click', async () => {
+        const allIds = [...document.querySelectorAll('.item-hide-btn')].map(b => b.getAttribute('data-id'));
+        const allHidden = allIds.length > 0 && allIds.every(id => hiddenItemsCache.has(id));
+        const shouldHide = !allHidden;
+        // Update all items
+        await Promise.all(allIds.map(id => setItemHidden(id, shouldHide)));
+        // Sync DOM immediately
+        document.querySelectorAll('.item-hide-btn').forEach(itemBtn => {
+            const id = itemBtn.getAttribute('data-id');
+            const noteItem = itemBtn.closest('.note-item');
+            if (!noteItem) return;
+            noteItem.classList.toggle('content-hidden', shouldHide);
+            itemBtn.title = shouldHide ? 'Show content' : 'Hide content';
+            itemBtn.innerHTML = `<i class="fas ${shouldHide ? 'fa-eye' : 'fa-eye-slash'}"></i>`;
+        });
+        updatePrivacyToggleBtn();
     });
-})();
+}
 
 // ── Per-item hidden state (Firebase-backed) ────────────────────────────────
 let hiddenItemsCache = new Set();
@@ -67,6 +76,7 @@ onAuthStateChanged(auth, (user) => {
     if (user) {
         // User is signed in
         document.getElementById('user-name').textContent = user.displayName || user.email;
+        wirePrivacyToggleBtn();
         loadUserData(user.uid);
     } else {
         // User is signed out, redirect to login page
@@ -126,6 +136,7 @@ function loadUserData(userId) {
             btn.title = nowHidden ? 'Show content' : 'Hide content';
             btn.innerHTML = `<i class="fas ${nowHidden ? 'fa-eye' : 'fa-eye-slash'}"></i>`;
         });
+        updatePrivacyToggleBtn();
     });
 }
 
