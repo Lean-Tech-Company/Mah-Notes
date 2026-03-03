@@ -3,13 +3,20 @@
 // ============================================================
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
 import { firebaseConfig } from './firebase-config.js';
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
+
+// Redirect already-logged-in users straight to the app
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        window.location.href = 'index.html';
+    }
+});
 
 // Toggle between login and signup
 document.getElementById('toggle-to-signup').addEventListener('click', (e) => {
