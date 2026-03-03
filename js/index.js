@@ -17,6 +17,38 @@ const provider = new GoogleAuthProvider();
 let currentQuickType = 'note';
 let currentEditingChecklistId = null;
 
+// ── Hamburger Menu Toggle ────────────────────────────────────────────────────
+(function initHamburger() {
+    const btn = document.getElementById('hamburger-btn');
+    const dropdown = document.getElementById('hamburger-dropdown');
+    if (!btn || !dropdown) return;
+
+    btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isOpen = dropdown.classList.toggle('open');
+        btn.classList.toggle('open', isOpen);
+        btn.setAttribute('aria-expanded', isOpen);
+    });
+
+    // Close when clicking anywhere outside
+    document.addEventListener('click', (e) => {
+        if (!btn.contains(e.target) && !dropdown.contains(e.target)) {
+            dropdown.classList.remove('open');
+            btn.classList.remove('open');
+            btn.setAttribute('aria-expanded', 'false');
+        }
+    });
+
+    // Close after a menu item is clicked
+    dropdown.querySelectorAll('.dropdown-item-btn').forEach(item => {
+        item.addEventListener('click', () => {
+            dropdown.classList.remove('open');
+            btn.classList.remove('open');
+            btn.setAttribute('aria-expanded', 'false');
+        });
+    });
+})();
+
 // ── Privacy Mode Toggle (hide-all / show-all via Firebase) ─────────────────
 function updatePrivacyToggleBtn() {
     const btn = document.getElementById('privacy-toggle-btn');
