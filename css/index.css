@@ -6,9 +6,126 @@
 .user-info {
     display: flex;
     align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
+    gap: 10px;
     justify-content: flex-end;
+}
+
+/* Override button text colour inside gradient header */
+header .btn {
+    background: rgba(255,255,255,0.18);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.35);
+    backdrop-filter: blur(4px);
+}
+header .btn:hover {
+    background: rgba(255,255,255,0.32);
+    transform: translateY(-1px);
+}
+header #user-name {
+    color: #fff;
+    font-weight: 600;
+    font-size: 15px;
+}
+
+/* Override: active privacy btn stays distinct */
+header .btn-privacy.active {
+    background: rgba(255,255,255,0.45);
+    color: #1565c0;
+}
+
+/* ── Hamburger Menu ─────────────────────────────────────────── */
+.hamburger-menu {
+    position: relative;
+}
+
+.hamburger-btn {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    width: 40px;
+    height: 40px;
+    background: rgba(255,255,255,0.18);
+    border: 1px solid rgba(255,255,255,0.35);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: var(--transition);
+    backdrop-filter: blur(4px);
+    padding: 0;
+}
+
+.hamburger-btn:hover {
+    background: rgba(255,255,255,0.32);
+    transform: translateY(-1px);
+}
+
+.hamburger-btn span {
+    display: block;
+    width: 18px;
+    height: 2px;
+    background: #fff;
+    border-radius: 2px;
+    transition: var(--transition);
+    transform-origin: center;
+}
+
+/* Animate to X when open */
+.hamburger-btn.open span:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+}
+.hamburger-btn.open span:nth-child(2) {
+    opacity: 0;
+    transform: scaleX(0);
+}
+.hamburger-btn.open span:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
+}
+
+.hamburger-dropdown {
+    display: none;
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    background: rgba(255,255,255,0.97);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(21,101,192,0.12);
+    border-radius: var(--border-radius);
+    box-shadow: 0 8px 24px rgba(21,101,192,0.18);
+    padding: 8px;
+    min-width: 170px;
+    flex-direction: column;
+    gap: 6px;
+    z-index: 600;
+    animation: slideUp 0.2s ease;
+}
+
+.hamburger-dropdown.open {
+    display: flex;
+}
+
+.dropdown-item-btn {
+    width: 100%;
+    justify-content: flex-start !important;
+    border-radius: 8px !important;
+    font-size: 13px !important;
+    padding: 8px 12px !important;
+    background: none !important;
+    border: none !important;
+    color: var(--dark) !important;
+    gap: 8px;
+    transition: var(--transition);
+}
+
+.dropdown-item-btn:hover {
+    background: #f0f5ff !important;
+    transform: none !important;
+    color: var(--primary) !important;
+}
+
+.dropdown-item-btn i {
+    width: 16px;
+    text-align: center;
 }
 
 .user-avatar {
@@ -26,9 +143,9 @@
 
 /* ── Privacy Toggle Button ──────────────────────────────────── */
 .btn-privacy {
-    background: #6c757d;
+    background: rgba(255,255,255,0.18);
     color: #fff;
-    border: none;
+    border: 1px solid rgba(255,255,255,0.35);
     padding: 6px 12px;
     border-radius: var(--border-radius);
     cursor: pointer;
@@ -37,11 +154,12 @@
 }
 
 .btn-privacy:hover {
-    background: #5a6268;
+    background: rgba(255,255,255,0.32);
 }
 
 .btn-privacy.active {
-    background: var(--primary);
+    background: rgba(255,255,255,0.45);
+    color: var(--primary);
 }
 
 /* When privacy mode is ON, hide note body content */
@@ -79,6 +197,20 @@ body.privacy-mode .smart-today-badge {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 15px;
+}
+
+/* Tablet */
+@media (max-width: 900px) {
+    .main-content {
+        grid-template-columns: 1fr;
+    }
+    .note-actions {
+        flex-wrap: wrap;
+    }
+    .action-btn {
+        font-size: 11px;
+        padding: 4px 7px;
+    }
 }
 
 @media (max-width: 768px) {
@@ -207,7 +339,7 @@ body.privacy-mode .smart-today-badge {
 }
 
 .note-item {
-    background-color: #f9f9f9;
+    background: linear-gradient(135deg, #fafbff 0%, #f5f0ff 100%);
     padding: 12px;
     border-radius: var(--border-radius);
     margin-bottom: 8px;
@@ -218,7 +350,8 @@ body.privacy-mode .smart-today-badge {
 }
 
 .note-item:hover {
-    background-color: #f0f5ff;
+    background: linear-gradient(135deg, #eef2ff 0%, #ede7ff 100%);
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15);
 }
 
 .note-title {
@@ -427,6 +560,7 @@ body.privacy-mode .smart-today-badge {
     display: flex;
     gap: 8px;
     flex-wrap: wrap;
+    align-items: center;
 }
 
 .smart-checklist-section {
@@ -780,13 +914,11 @@ body.privacy-mode .smart-today-badge {
     }
 
     .card-header {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 8px;
+        /* Re-bleed at reduced card padding */
+        margin: -15px -15px 14px -15px;
     }
 
     .card-title {
-        text-align: center;
         font-size: 17px;
     }
 
@@ -891,6 +1023,10 @@ body.privacy-mode .smart-today-badge {
 
     .card {
         padding: 12px;
+    }
+
+    .card-header {
+        margin: -12px -12px 12px -12px;
     }
 
     .note-item {
