@@ -41,6 +41,27 @@ let currentEditingChecklistId = null;
     });
 })();
 
+// ── Per-item hidden state (Firebase-backed) ────────────────────────────────
+let hiddenItemsCache = new Set();
+
+function getHiddenItems() {
+    return hiddenItemsCache;
+}
+
+async function setItemHidden(id, hidden) {
+    // Update cache immediately for instant UI feedback
+    hidden ? hiddenItemsCache.add(id) : hiddenItemsCache.delete(id);
+    // Persist to Firebase
+    const userId = auth.currentUser && auth.currentUser.uid;
+    if (!userId) return;
+    const itemRef = ref(database, `users/${userId}/hiddenItems/${id}`);
+    if (hidden) {
+        await set(itemRef, true);
+    } else {
+        await remove(itemRef);
+    }
+}
+
 // Check if user is logged in
 onAuthStateChanged(auth, (user) => {
     if (user) {
@@ -89,6 +110,23 @@ function loadUserData(userId) {
         console.error('Smart checklists fetch error:', error);
         hideLoader();
     });
+
+    // Sync per-item hidden states from Firebase
+    const hiddenItemsRef = ref(database, `users/${userId}/hiddenItems`);
+    onValue(hiddenItemsRef, (snapshot) => {
+        const data = snapshot.val() || {};
+        hiddenItemsCache = new Set(Object.keys(data).filter(k => data[k]));
+        // Apply to any already-rendered items without full re-render
+        document.querySelectorAll('.item-hide-btn').forEach(btn => {
+            const id = btn.getAttribute('data-id');
+            const noteItem = btn.closest('.note-item');
+            if (!noteItem) return;
+            const nowHidden = hiddenItemsCache.has(id);
+            noteItem.classList.toggle('content-hidden', nowHidden);
+            btn.title = nowHidden ? 'Show content' : 'Hide content';
+            btn.innerHTML = `<i class="fas ${nowHidden ? 'fa-eye' : 'fa-eye-slash'}"></i>`;
+        });
+    });
 }
 
 // Initialize type toggle
@@ -136,12 +174,16 @@ function displayNotes(notes) {
 
     Object.keys(notes).forEach(key => {
         const note = notes[key];
+        const hidden = getHiddenItems().has(key);
         const noteElement = document.createElement('div');
-        noteElement.className = 'note-item';
+        noteElement.className = 'note-item' + (hidden ? ' content-hidden' : '');
         noteElement.innerHTML = `
             <div class="note-title">
                 <span class="note-title-text">${note.title}</span>
                 <div class="note-actions">
+                    <button class="action-btn item-hide-btn" data-id="${key}" title="${hidden ? 'Show content' : 'Hide content'}">
+                        <i class="fas ${hidden ? 'fa-eye' : 'fa-eye-slash'}"></i>
+                    </button>
                     <button class="action-btn view-btn" data-id="${key}" data-type="note">
                         <i class="fas fa-eye"></i> View
                     </button>
@@ -159,6 +201,15 @@ function displayNotes(notes) {
             <div class="note-content">${note.content}</div>
         `;
         notesList.appendChild(noteElement);
+
+        // Per-item hide toggle
+        noteElement.querySelector('.item-hide-btn').addEventListener('click', () => {
+            const nowHidden = noteElement.classList.toggle('content-hidden');
+            setItemHidden(key, nowHidden);
+            const btn = noteElement.querySelector('.item-hide-btn');
+            btn.title = nowHidden ? 'Show content' : 'Hide content';
+            btn.innerHTML = `<i class="fas ${nowHidden ? 'fa-eye' : 'fa-eye-slash'}"></i>`;
+        });
     });
 
     // Add event listeners for edit and delete buttons
@@ -213,12 +264,16 @@ function displayChecklists(checklists) {
 
     Object.keys(checklists).forEach(key => {
         const checklist = checklists[key];
+        const hidden = getHiddenItems().has(key);
         const checklistElement = document.createElement('div');
-        checklistElement.className = 'note-item';
+        checklistElement.className = 'note-item' + (hidden ? ' content-hidden' : '');
         checklistElement.innerHTML = `
             <div class="note-title">
                 <span class="note-title-text">${checklist.title}${checklist.isReusable ? ' <span class="reusable-badge"><i class="fas fa-sync-alt"></i> Reusable</span>' : ''}</span>
                 <div class="note-actions">
+                    <button class="action-btn item-hide-btn" data-id="${key}" title="${hidden ? 'Show content' : 'Hide content'}">
+                        <i class="fas ${hidden ? 'fa-eye' : 'fa-eye-slash'}"></i>
+                    </button>
                     <button class="action-btn view-btn" data-id="${key}" data-type="checklist">
                         <i class="fas fa-eye"></i> View
                     </button>
@@ -235,6 +290,15 @@ function displayChecklists(checklists) {
             </div>
         `;
         checklistsList.appendChild(checklistElement);
+
+        // Per-item hide toggle
+        checklistElement.querySelector('.item-hide-btn').addEventListener('click', () => {
+            const nowHidden = checklistElement.classList.toggle('content-hidden');
+            setItemHidden(key, nowHidden);
+            const btn = checklistElement.querySelector('.item-hide-btn');
+            btn.title = nowHidden ? 'Show content' : 'Hide content';
+            btn.innerHTML = `<i class="fas ${nowHidden ? 'fa-eye' : 'fa-eye-slash'}"></i>`;
+        });
 
         // Add event listeners for view buttons
         const viewButton = checklistElement.querySelector('.view-btn');
@@ -1322,7 +1386,8 @@ function displaySmartChecklists(smartChecklists) {
         const checkedCount = todayItems.filter(i => i.checked).length;
 
         const el = document.createElement('div');
-        el.className = 'note-item smart-note-item';
+        const hidden = getHiddenItems().has(key);
+        el.className = 'note-item smart-note-item' + (hidden ? ' content-hidden' : '');
         el.innerHTML = `
             <div class="note-title">
                 <span class="note-title-text">
@@ -1331,6 +1396,9 @@ function displaySmartChecklists(smartChecklists) {
                     ${todayCount > 0 ? `<span class="smart-today-badge"><i class="fas fa-clock"></i> ${todayLabel}</span>` : ''}
                 </span>
                 <div class="note-actions">
+                    <button class="action-btn item-hide-btn" data-id="${key}" title="${hidden ? 'Show content' : 'Hide content'}">
+                        <i class="fas ${hidden ? 'fa-eye' : 'fa-eye-slash'}"></i>
+                    </button>
                     <button class="action-btn view-btn" data-id="${key}" data-type="smartChecklist">
                         <i class="fas fa-eye"></i> View
                     </button>
@@ -1348,6 +1416,15 @@ function displaySmartChecklists(smartChecklists) {
             ${todayCount > 0 ? `<div class="smart-today-count"><i class="fas fa-list-check"></i> ${checkedCount}/${todayCount} items for today</div>` : '<div class="smart-today-count" style="color:#999;"><i class="fas fa-moon"></i> No items scheduled for today</div>'}
         `;
         list.appendChild(el);
+
+        // Per-item hide toggle
+        el.querySelector('.item-hide-btn').addEventListener('click', () => {
+            const nowHidden = el.classList.toggle('content-hidden');
+            setItemHidden(key, nowHidden);
+            const btn = el.querySelector('.item-hide-btn');
+            btn.title = nowHidden ? 'Show content' : 'Hide content';
+            btn.innerHTML = `<i class="fas ${nowHidden ? 'fa-eye' : 'fa-eye-slash'}"></i>`;
+        });
 
         // View button
         el.querySelector('.view-btn').addEventListener('click', () => {
