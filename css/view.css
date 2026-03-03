@@ -456,3 +456,37 @@
         font-size: 14px;
     }
 }
+
+/* ── Reference View: Smart Checklist daily layout ───────────────────── */
+.ref-week-details {
+    margin-top: 20px;
+    border: 1px solid #eee;
+    border-radius: var(--border-radius);
+    overflow: hidden;
+}
+
+.ref-week-details summary {
+    padding: 12px 16px;
+    background: #f8f9fa;
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--primary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    user-select: none;
+    transition: background 0.2s;
+}
+
+.ref-week-details summary:hover {
+    background: #eef2ff;
+}
+
+.ref-week-details[open] summary {
+    border-bottom: 1px solid #eee;
+}
+
+.ref-week-details .schedule-grid {
+    padding: 12px;
+}
