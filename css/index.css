@@ -362,6 +362,248 @@
     color: var(--success) !important;
 }
 
+/* ── Smart Day-Based Checklist ───────────────────────────────── */
+.btn-smart {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.btn-smart:hover {
+    background: linear-gradient(135deg, #5a6fd6 0%, #6a4292 100%);
+    transform: translateY(-1px);
+}
+
+.card-header-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.smart-checklist-section {
+    margin-top: 10px;
+}
+
+.section-divider {
+    display: flex;
+    align-items: center;
+    margin: 12px 0 8px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #667eea;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.section-divider::before,
+.section-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    opacity: 0.3;
+}
+
+.section-divider::before {
+    margin-right: 10px;
+}
+
+.section-divider::after {
+    margin-left: 10px;
+}
+
+.section-divider span {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.smart-items-info {
+    background-color: #f0f0ff;
+    border-left: 3px solid #667eea;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    color: #555;
+    margin-bottom: 12px;
+}
+
+/* ── Smart Day Tabs (Mon–Sun selector) ──────────────────────── */
+.smart-day-tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+}
+
+.smart-day-tab {
+    flex: 1;
+    min-width: 38px;
+    text-align: center;
+    padding: 7px 4px;
+    border-radius: 8px 8px 0 0;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 700;
+    background-color: #e8e8f0;
+    color: #666;
+    border: 1px solid #ddd;
+    border-bottom: none;
+    transition: var(--transition);
+    user-select: none;
+}
+
+.smart-day-tab:hover {
+    background-color: #d8d8f0;
+}
+
+.smart-day-tab.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-color: #667eea;
+}
+
+.smart-day-tab.has-items {
+    background-color: #dff5e3;
+    color: var(--success);
+    border-color: #b3e6bf;
+    position: relative;
+}
+
+.smart-day-tab.has-items::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    right: 3px;
+    width: 6px;
+    height: 6px;
+    background-color: var(--success);
+    border-radius: 50%;
+}
+
+.smart-day-tab.active.has-items {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.smart-day-tab.active.has-items::after {
+    background-color: white;
+}
+
+/* ── Set Days Browser Tabs ──────────────────────────────────── */
+.smart-set-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-bottom: 6px;
+    min-height: 0;
+}
+
+.smart-set-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    background-color: #dff5e3;
+    color: var(--success);
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: var(--transition);
+    border: 1px solid #b3e6bf;
+}
+
+.smart-set-tab:hover {
+    background-color: #c8eed0;
+}
+
+.smart-set-tab .set-tab-count {
+    background-color: var(--success);
+    color: white;
+    font-size: 10px;
+    padding: 0 5px;
+    border-radius: 8px;
+    min-width: 16px;
+    text-align: center;
+}
+
+.smart-set-tab .set-tab-close {
+    font-size: 11px;
+    cursor: pointer;
+    opacity: 0.6;
+    transition: var(--transition);
+}
+
+.smart-set-tab .set-tab-close:hover {
+    opacity: 1;
+    color: var(--danger);
+}
+
+/* ── Day Editor ─────────────────────────────────────────────── */
+.smart-day-editor {
+    background-color: #fafaff;
+    border: 1px solid #ddd;
+    border-radius: 0 0 8px 8px;
+    padding: 12px;
+    animation: slideUp 0.2s ease;
+}
+
+.smart-day-editor-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    font-weight: 700;
+    font-size: 14px;
+    color: #667eea;
+}
+
+.btn-full {
+    width: 100%;
+    justify-content: center;
+}
+
+.smart-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    margin-left: 8px;
+    font-weight: 600;
+    vertical-align: middle;
+}
+
+.smart-today-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background-color: var(--success);
+    color: white;
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    margin-left: 6px;
+    font-weight: 600;
+    vertical-align: middle;
+}
+
+.smart-today-count {
+    font-size: 11px;
+    color: #667eea;
+    margin-top: 4px;
+    font-weight: 500;
+}
+
+.note-item.smart-note-item {
+    border-left-color: #667eea;
+}
+
+.note-item.smart-note-item:hover {
+    background-color: #f0f0ff;
+}
+
 /* ── Share Token Actions ────────────────────────────────────── */
 .share-token-actions {
     display: flex;
@@ -423,6 +665,26 @@
 
 /* ── Mobile: 480px ──────────────────────────────────────────── */
 @media (max-width: 480px) {
+    .card-header-actions {
+        width: 100%;
+        flex-direction: column;
+    }
+
+    .card-header-actions .btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .smart-day-tabs {
+        gap: 3px;
+    }
+
+    .smart-day-tab {
+        padding: 6px 2px;
+        font-size: 11px;
+        min-width: 32px;
+    }
+
     .container {
         padding: 10px;
     }

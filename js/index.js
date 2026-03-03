@@ -47,6 +47,14 @@ function loadUserData(userId) {
         displayChecklists(checklists);
         hideLoader();
     });
+
+    const smartChecklistsRef = ref(database, 'users/' + userId + '/smartChecklists');
+    onValue(smartChecklistsRef, (snapshot) => {
+        const smartChecklists = snapshot.val();
+        autoResetSmartChecklists(userId, smartChecklists);
+        displaySmartChecklists(smartChecklists);
+        hideLoader();
+    });
 }
 
 // Initialize type toggle
@@ -950,6 +958,367 @@ function checkAndResetReusableChecklists(userId, checklists) {
                 items: resetItems,
                 completedAt: null,
                 lastResetDate: new Date().toISOString()
+            });
+        }
+    });
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  SMART DAY-BASED CHECKLIST FEATURE
+// ═══════════════════════════════════════════════════════════════
+
+const DAYS_OF_WEEK = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+const DAY_LABELS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+function getTodayName() {
+    return DAYS_OF_WEEK[new Date().getDay()];
+}
+
+function getTodayDateString() {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+// -- Smart Checklist Modal Logic (Day-Tab Interface) --
+
+let currentEditingSmartId = null;
+// Stores items per day while the modal is open: { monday: ['item1','item2'], ... }
+let smartDayData = {};
+let smartActiveDay = null;
+
+const SMART_DAY_ORDER = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+const SMART_DAY_SHORT = { monday: 'Mon', tuesday: 'Tue', wednesday: 'Wed', thursday: 'Thu', friday: 'Fri', saturday: 'Sat', sunday: 'Sun' };
+const SMART_DAY_FULL  = { monday: 'Monday', tuesday: 'Tuesday', wednesday: 'Wednesday', thursday: 'Thursday', friday: 'Friday', saturday: 'Saturday', sunday: 'Sunday' };
+
+function resetSmartModal() {
+    smartDayData = {};
+    smartActiveDay = null;
+    document.getElementById('smart-checklist-title').value = '';
+    document.getElementById('smart-day-editor').style.display = 'none';
+    document.getElementById('smart-day-items').value = '';
+    renderSmartTabs();
+    renderSmartSetTabs();
+}
+
+function renderSmartTabs() {
+    document.querySelectorAll('#smart-day-tabs .smart-day-tab').forEach(tab => {
+        const day = tab.getAttribute('data-day');
+        tab.classList.toggle('active', day === smartActiveDay);
+        tab.classList.toggle('has-items', !!(smartDayData[day] && smartDayData[day].length > 0));
+    });
+}
+
+function renderSmartSetTabs() {
+    const container = document.getElementById('smart-set-tabs');
+    container.innerHTML = '';
+    SMART_DAY_ORDER.forEach(day => {
+        if (smartDayData[day] && smartDayData[day].length > 0) {
+            const tab = document.createElement('div');
+            tab.className = 'smart-set-tab';
+            tab.innerHTML = `
+                ${SMART_DAY_SHORT[day]}
+                <span class="set-tab-count">${smartDayData[day].length}</span>
+                <span class="set-tab-close" data-day="${day}" title="Remove ${SMART_DAY_SHORT[day]}">&times;</span>
+            `;
+            // Clicking the tab opens that day for editing
+            tab.addEventListener('click', (e) => {
+                if (e.target.classList.contains('set-tab-close')) return;
+                openSmartDayEditor(day);
+            });
+            // Close button clears that day
+            tab.querySelector('.set-tab-close').addEventListener('click', (e) => {
+                e.stopPropagation();
+                delete smartDayData[day];
+                if (smartActiveDay === day) {
+                    smartActiveDay = null;
+                    document.getElementById('smart-day-editor').style.display = 'none';
+                }
+                renderSmartTabs();
+                renderSmartSetTabs();
+            });
+            container.appendChild(tab);
+        }
+    });
+}
+
+function openSmartDayEditor(day) {
+    // Save current editor content before switching
+    saveCurrentDayEditorSilently();
+    smartActiveDay = day;
+    const editor = document.getElementById('smart-day-editor');
+    editor.style.display = 'block';
+    document.getElementById('smart-day-editor-label').innerHTML = `<i class="fas fa-calendar-day"></i> ${SMART_DAY_FULL[day]}`;
+    document.getElementById('smart-day-items').value = (smartDayData[day] || []).join('\n');
+    document.getElementById('smart-day-items').focus();
+    renderSmartTabs();
+}
+
+function saveCurrentDayEditorSilently() {
+    if (!smartActiveDay) return;
+    const text = document.getElementById('smart-day-items').value;
+    const lines = text.split('\n').filter(l => l.trim() !== '');
+    if (lines.length > 0) {
+        smartDayData[smartActiveDay] = lines;
+    } else {
+        delete smartDayData[smartActiveDay];
+    }
+}
+
+// Click a day tab
+document.getElementById('smart-day-tabs').addEventListener('click', (e) => {
+    const tab = e.target.closest('.smart-day-tab');
+    if (!tab) return;
+    const day = tab.getAttribute('data-day');
+    openSmartDayEditor(day);
+});
+
+// "Set" button — saves current day and collapses editor
+document.getElementById('smart-day-set-btn').addEventListener('click', () => {
+    if (!smartActiveDay) return;
+    const text = document.getElementById('smart-day-items').value;
+    const lines = text.split('\n').filter(l => l.trim() !== '');
+    if (lines.length === 0) {
+        delete smartDayData[smartActiveDay];
+    } else {
+        smartDayData[smartActiveDay] = lines;
+    }
+    smartActiveDay = null;
+    document.getElementById('smart-day-editor').style.display = 'none';
+    renderSmartTabs();
+    renderSmartSetTabs();
+    showNotification('Day set!', 'success');
+});
+
+// "Clear" button — clears current day
+document.getElementById('smart-day-clear').addEventListener('click', () => {
+    if (!smartActiveDay) return;
+    delete smartDayData[smartActiveDay];
+    document.getElementById('smart-day-items').value = '';
+    smartActiveDay = null;
+    document.getElementById('smart-day-editor').style.display = 'none';
+    renderSmartTabs();
+    renderSmartSetTabs();
+});
+
+// Open modal for new smart checklist
+document.getElementById('new-smart-checklist-btn').addEventListener('click', () => {
+    resetSmartModal();
+    currentEditingSmartId = null;
+    document.getElementById('smart-checklist-modal').style.display = 'flex';
+
+    const saveBtn = document.getElementById('save-smart-checklist');
+    saveBtn.innerHTML = '<i class="fas fa-save"></i> Save Smart Checklist';
+    saveBtn.onclick = saveNewSmartChecklist;
+});
+
+// Close modal
+document.getElementById('close-smart-checklist-modal').addEventListener('click', () => {
+    document.getElementById('smart-checklist-modal').style.display = 'none';
+    currentEditingSmartId = null;
+});
+
+// Collect all items from smartDayData into a flat array
+function collectSmartItems() {
+    const items = [];
+    SMART_DAY_ORDER.forEach(day => {
+        (smartDayData[day] || []).forEach(text => {
+            items.push({ text: text.trim(), day, time: '00:00', checked: false });
+        });
+    });
+    return items;
+}
+
+// Save new smart checklist
+function saveNewSmartChecklist() {
+    // Save any unsaved active editor content
+    saveCurrentDayEditorSilently();
+    renderSmartSetTabs();
+
+    const title = document.getElementById('smart-checklist-title').value.trim();
+    if (!title) {
+        showNotification('Please enter a title', 'error');
+        return;
+    }
+
+    const items = collectSmartItems();
+    if (items.length === 0) {
+        showNotification('Please set items for at least one day', 'error');
+        return;
+    }
+
+    const userId = auth.currentUser.uid;
+    const smartRef = ref(database, 'users/' + userId + '/smartChecklists');
+    const newRef = push(smartRef);
+    set(newRef, {
+        title,
+        items,
+        lastResetDate: getTodayDateString(),
+        createdAt: new Date().toISOString()
+    });
+
+    document.getElementById('smart-checklist-modal').style.display = 'none';
+    showNotification('Smart checklist saved!', 'success');
+}
+
+// Edit smart checklist — populate day data from existing items
+function editSmartChecklist(id, checklist) {
+    if (!checklist) return;
+    resetSmartModal();
+    currentEditingSmartId = id;
+    document.getElementById('smart-checklist-title').value = checklist.title;
+
+    // Group items by day
+    (checklist.items || []).forEach(item => {
+        if (!smartDayData[item.day]) smartDayData[item.day] = [];
+        smartDayData[item.day].push(item.text);
+    });
+
+    renderSmartTabs();
+    renderSmartSetTabs();
+    document.getElementById('smart-checklist-modal').style.display = 'flex';
+
+    const saveBtn = document.getElementById('save-smart-checklist');
+    saveBtn.innerHTML = '<i class="fas fa-save"></i> Update Smart Checklist';
+    saveBtn.onclick = updateExistingSmartChecklist;
+}
+
+function updateExistingSmartChecklist() {
+    saveCurrentDayEditorSilently();
+    renderSmartSetTabs();
+
+    const title = document.getElementById('smart-checklist-title').value.trim();
+    if (!title) {
+        showNotification('Please enter a title', 'error');
+        return;
+    }
+
+    const items = collectSmartItems();
+    if (items.length === 0) {
+        showNotification('Please set items for at least one day', 'error');
+        return;
+    }
+
+    const userId = auth.currentUser.uid;
+    const smartRef = ref(database, `users/${userId}/smartChecklists/${currentEditingSmartId}`);
+    update(smartRef, {
+        title,
+        items,
+        updatedAt: new Date().toISOString()
+    });
+
+    document.getElementById('smart-checklist-modal').style.display = 'none';
+    currentEditingSmartId = null;
+
+    const saveBtn = document.getElementById('save-smart-checklist');
+    saveBtn.innerHTML = '<i class="fas fa-save"></i> Save Smart Checklist';
+    saveBtn.onclick = saveNewSmartChecklist;
+
+    showNotification('Smart checklist updated!', 'success');
+}
+
+// Delete smart checklist
+function deleteSmartChecklist(id) {
+    if (confirm('Are you sure you want to delete this smart checklist?')) {
+        const userId = auth.currentUser.uid;
+        const smartRef = ref(database, `users/${userId}/smartChecklists/${id}`);
+        remove(smartRef);
+        cleanupShareTokens(userId, id);
+        showNotification('Smart checklist deleted!', 'success');
+    }
+}
+
+// Display smart checklists on the dashboard
+function displaySmartChecklists(smartChecklists) {
+    const list = document.getElementById('smart-checklists-list');
+    const section = document.getElementById('smart-checklists-section');
+    list.innerHTML = '';
+
+    if (!smartChecklists || Object.keys(smartChecklists).length === 0) {
+        section.style.display = 'none';
+        return;
+    }
+
+    section.style.display = 'block';
+    const today = getTodayName();
+    const todayLabel = DAY_LABELS[DAYS_OF_WEEK.indexOf(today)];
+
+    Object.keys(smartChecklists).forEach(key => {
+        const sc = smartChecklists[key];
+        const todayItems = (sc.items || []).filter(i => i.day === today);
+        const todayCount = todayItems.length;
+        const checkedCount = todayItems.filter(i => i.checked).length;
+
+        const el = document.createElement('div');
+        el.className = 'note-item smart-note-item';
+        el.innerHTML = `
+            <div class="note-title">
+                <span class="note-title-text">
+                    ${sc.title}
+                    <span class="smart-badge"><i class="fas fa-calendar-week"></i> Smart</span>
+                    ${todayCount > 0 ? `<span class="smart-today-badge"><i class="fas fa-clock"></i> ${todayLabel}</span>` : ''}
+                </span>
+                <div class="note-actions">
+                    <button class="action-btn view-btn" data-id="${key}" data-type="smartChecklist">
+                        <i class="fas fa-eye"></i> View
+                    </button>
+                    <button class="action-btn edit-smart" data-id="${key}">
+                        <i class="fas fa-edit"></i> Edit
+                    </button>
+                    <button class="action-btn delete-smart" data-id="${key}">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                    <button class="action-btn share-btn share-smart" data-id="${key}">
+                        <i class="fas fa-share-alt"></i> Share
+                    </button>
+                </div>
+            </div>
+            ${todayCount > 0 ? `<div class="smart-today-count"><i class="fas fa-list-check"></i> ${checkedCount}/${todayCount} items for today</div>` : '<div class="smart-today-count" style="color:#999;"><i class="fas fa-moon"></i> No items scheduled for today</div>'}
+        `;
+        list.appendChild(el);
+
+        // View button
+        el.querySelector('.view-btn').addEventListener('click', () => {
+            localStorage.setItem('viewItemId', key);
+            localStorage.setItem('viewItemType', 'smartChecklist');
+            window.location.href = 'view.html';
+        });
+
+        // Edit button
+        el.querySelector('.edit-smart').addEventListener('click', () => {
+            editSmartChecklist(key, smartChecklists[key]);
+        });
+
+        // Delete button
+        el.querySelector('.delete-smart').addEventListener('click', () => {
+            deleteSmartChecklist(key);
+        });
+
+        // Share button
+        el.querySelector('.share-smart').addEventListener('click', () => {
+            shareItem('smartChecklist', key, smartChecklists[key]);
+        });
+    });
+}
+
+// Auto-reset smart checklists daily
+function autoResetSmartChecklists(userId, smartChecklists) {
+    if (!smartChecklists) return;
+    const todayStr = getTodayDateString();
+
+    Object.keys(smartChecklists).forEach(key => {
+        const sc = smartChecklists[key];
+        if (sc.lastResetDate !== todayStr) {
+            // New day — uncheck all items
+            const resetItems = (sc.items || []).map(item => ({
+                text: item.text,
+                day: item.day,
+                time: item.time || '00:00',
+                checked: false
+            }));
+            const scRef = ref(database, `users/${userId}/smartChecklists/${key}`);
+            update(scRef, {
+                items: resetItems,
+                lastResetDate: todayStr
             });
         }
     });

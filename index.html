@@ -54,12 +54,25 @@
                 <div class="card">
                     <div class="card-header">
                         <h2 class="card-title">Checklists</h2>
-                        <button class="btn btn-accent" id="new-checklist-btn">
-                            <i class="fas fa-plus"></i> New Checklist
-                        </button>
+                        <div class="card-header-actions">
+                            <button class="btn btn-accent" id="new-checklist-btn">
+                                <i class="fas fa-plus"></i> New Checklist
+                            </button>
+                            <button class="btn btn-smart" id="new-smart-checklist-btn">
+                                <i class="fas fa-calendar-week"></i> Smart Checklist
+                            </button>
+                        </div>
                     </div>
                     <div class="notes-list" id="checklists-list">
                         <!-- Checklists will be dynamically added here -->
+                    </div>
+                    <div class="smart-checklist-section" id="smart-checklists-section">
+                        <div class="section-divider">
+                            <span><i class="fas fa-calendar-week"></i> Smart Day-Based Checklists</span>
+                        </div>
+                        <div class="notes-list" id="smart-checklists-list">
+                            <!-- Smart checklists will be dynamically added here -->
+                        </div>
                     </div>
                 </div>
             </div>
@@ -183,6 +196,57 @@
             <div class="form-group">
                 <button class="btn btn-accent" id="save-checklist">
                     <i class="fas fa-save"></i> Save Checklist
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for creating smart day-based checklist -->
+    <div class="modal" id="smart-checklist-modal">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h3 class="modal-title"><i class="fas fa-calendar-week"></i> Smart Day-Based Checklist</h3>
+                <button class="close-modal" id="close-smart-checklist-modal">&times;</button>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="smart-checklist-title">Title</label>
+                <input type="text" class="form-input" id="smart-checklist-title" placeholder="e.g. Workout Schedule">
+            </div>
+            <div class="form-group">
+                <div class="smart-items-info">
+                    <i class="fas fa-info-circle"></i> Click a day tab, type items (one per line), then click "Set" to save that day. Set days will appear as tabs above.
+                </div>
+                <!-- Day tabs row -->
+                <div class="smart-day-tabs" id="smart-day-tabs">
+                    <div class="smart-day-tab" data-day="monday">Mon</div>
+                    <div class="smart-day-tab" data-day="tuesday">Tue</div>
+                    <div class="smart-day-tab" data-day="wednesday">Wed</div>
+                    <div class="smart-day-tab" data-day="thursday">Thu</div>
+                    <div class="smart-day-tab" data-day="friday">Fri</div>
+                    <div class="smart-day-tab" data-day="saturday">Sat</div>
+                    <div class="smart-day-tab" data-day="sunday">Sun</div>
+                </div>
+                <!-- Set days shown as browser-like tabs -->
+                <div class="smart-set-tabs" id="smart-set-tabs">
+                    <!-- Filled dynamically -->
+                </div>
+                <!-- Active day editor -->
+                <div class="smart-day-editor" id="smart-day-editor" style="display:none;">
+                    <div class="smart-day-editor-header">
+                        <span id="smart-day-editor-label"></span>
+                        <button class="btn btn-sm btn-outline-danger" id="smart-day-clear" title="Clear this day">
+                            <i class="fas fa-trash-alt"></i> Clear
+                        </button>
+                    </div>
+                    <textarea class="form-input" id="smart-day-items" rows="5" placeholder="Enter items for this day, one per line..."></textarea>
+                    <button class="btn btn-primary btn-full" id="smart-day-set-btn" style="margin-top:8px;">
+                        <i class="fas fa-check"></i> Set
+                    </button>
+                </div>
+            </div>
+            <div class="form-group">
+                <button class="btn btn-smart btn-full" id="save-smart-checklist">
+                    <i class="fas fa-save"></i> Save Smart Checklist
                 </button>
             </div>
         </div>

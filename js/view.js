@@ -98,12 +98,24 @@ function loadSpecificItem(userId) {
         return;
     }
 
-    const itemRef = ref(database, `users/${userId}/${itemType}s/${itemId}`);
+    // Smart checklists are stored under a different path
+    const pathMap = {
+        note: 'notes',
+        checklist: 'checklists',
+        smartChecklist: 'smartChecklists'
+    };
+    const pathSegment = pathMap[itemType] || (itemType + 's');
+
+    const itemRef = ref(database, `users/${userId}/${pathSegment}/${itemId}`);
 
     onValue(itemRef, (snapshot) => {
         const item = snapshot.val();
         if (item) {
-            displayItem(item, itemType, itemId, userId);
+            if (itemType === 'smartChecklist') {
+                displaySmartChecklist(item, itemId, userId);
+            } else {
+                displayItem(item, itemType, itemId, userId);
+            }
         } else {
             showItemNotFound();
         }
@@ -217,6 +229,149 @@ function displayItem(item, itemType, itemId, userId) {
     }
 }
 
+// Display smart day-based checklist — only today's items
+function displaySmartChecklist(item, itemId, userId) {
+    const contentArea = document.getElementById('content-area');
+    const DAYS = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+    const DAY_LABELS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const today = DAYS[new Date().getDay()];
+    const todayLabel = DAY_LABELS[new Date().getDay()];
+
+    // Get all items and filter for today
+    const allItems = item.items || [];
+    const todayItems = [];
+    const todayIndices = [];
+    allItems.forEach((it, idx) => {
+        if (it.day === today) {
+            todayItems.push(it);
+            todayIndices.push(idx);
+        }
+    });
+
+    if (todayItems.length === 0) {
+        contentArea.innerHTML = `
+            <div class="card">
+                <div class="smart-view-header">
+                    <h1 class="card-title">${item.title}</h1>
+                    <div class="smart-day-indicator">
+                        <i class="fas fa-calendar-day"></i> ${todayLabel}
+                    </div>
+                </div>
+                <div class="empty-state" style="padding:30px;">
+                    <i class="fas fa-moon" style="font-size:48px;color:#ccc;"></i>
+                    <h2 style="margin-top:12px;">No items for today</h2>
+                    <p>You have no tasks scheduled for ${todayLabel}.</p>
+                </div>
+                <div class="all-days-summary">
+                    <h3 style="margin-bottom:10px;color:var(--primary);"><i class="fas fa-calendar-week"></i> Full Schedule</h3>
+                    ${buildFullScheduleHTML(allItems, DAYS, DAY_LABELS, today)}
+                </div>
+            </div>
+        `;
+        return;
+    }
+
+    const checkedCount = todayItems.filter(i => i.checked).length;
+
+    contentArea.innerHTML = `
+        <div class="card">
+            <div class="smart-view-header">
+                <h1 class="card-title">${item.title}</h1>
+                <div class="smart-day-indicator">
+                    <i class="fas fa-calendar-day"></i> ${todayLabel}
+                    <span class="smart-progress">${checkedCount}/${todayItems.length}</span>
+                </div>
+            </div>
+            <div class="checkbox-list" id="smart-checklist-items">
+                ${todayItems.map((ti, localIdx) => `
+                    <div class="checkbox-item ${ti.checked ? 'checked' : ''}" data-real-index="${todayIndices[localIdx]}">
+                        <input type="checkbox" ${ti.checked ? 'checked' : ''}>
+                        <span class="item-text">${ti.text}</span>
+                        ${ti.time && ti.time !== '00:00' ? `<span class="smart-item-time-badge"><i class="fas fa-clock"></i> ${formatTime12(ti.time)}</span>` : ''}
+                        <i class="fas fa-check saving-indicator"></i>
+                    </div>
+                `).join('')}
+            </div>
+            <div class="all-days-summary" style="margin-top:20px;">
+                <h3 style="margin-bottom:10px;color:var(--primary);"><i class="fas fa-calendar-week"></i> Full Schedule</h3>
+                ${buildFullScheduleHTML(allItems, DAYS, DAY_LABELS, today)}
+            </div>
+        </div>
+    `;
+
+    // Wire up checkboxes
+    const checklistContainer = document.getElementById('smart-checklist-items');
+    checklistContainer.querySelectorAll('.checkbox-item').forEach(rowEl => {
+        const checkbox = rowEl.querySelector('input[type="checkbox"]');
+        const savingIndicator = rowEl.querySelector('.saving-indicator');
+
+        checkbox.addEventListener('change', async () => {
+            const realIndex = parseInt(rowEl.getAttribute('data-real-index'));
+            const isChecked = checkbox.checked;
+
+            rowEl.classList.toggle('checked', isChecked);
+            savingIndicator.classList.add('show');
+            showLoader();
+
+            try {
+                const itemRef = ref(database, `users/${userId}/smartChecklists/${itemId}/items/${realIndex}`);
+                await update(itemRef, { checked: isChecked });
+
+                setTimeout(() => {
+                    savingIndicator.classList.remove('show');
+                }, 1000);
+
+                showNotification('Updated!', 'success');
+
+                // Update progress display
+                const allCbs = checklistContainer.querySelectorAll('input[type="checkbox"]');
+                const nowChecked = Array.from(allCbs).filter(cb => cb.checked).length;
+                document.querySelector('.smart-progress').textContent = `${nowChecked}/${allCbs.length}`;
+
+                if (nowChecked === allCbs.length) {
+                    showNotification('All done for today! Great job!', 'success');
+                }
+            } catch (error) {
+                console.error('Save error:', error);
+                checkbox.checked = !isChecked;
+                rowEl.classList.toggle('checked', !isChecked);
+                showNotification('Failed to save: ' + error.message, 'error');
+            } finally {
+                hideLoader();
+            }
+        });
+    });
+}
+
+// Build a summary HTML of all days' items
+function buildFullScheduleHTML(allItems, days, dayLabels, today) {
+    let html = '<div class="schedule-grid">';
+    days.forEach((day, i) => {
+        const dayItems = allItems.filter(it => it.day === day);
+        if (dayItems.length === 0) return;
+        const isToday = day === today;
+        html += `
+            <div class="schedule-day ${isToday ? 'schedule-day-active' : ''}">
+                <div class="schedule-day-name">${dayLabels[i]} ${isToday ? '<span class="schedule-today-tag">TODAY</span>' : ''}</div>
+                <ul class="schedule-day-items">
+                    ${dayItems.map(it => `<li>${it.text}${it.time && it.time !== '00:00' ? ` <small style="color:#999;">${formatTime12(it.time)}</small>` : ''}</li>`).join('')}
+                </ul>
+            </div>
+        `;
+    });
+    html += '</div>';
+    return html;
+}
+
+// Format 24h time to 12h
+function formatTime12(time) {
+    if (!time) return '';
+    const [h, m] = time.split(':').map(Number);
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    const hour = h % 12 || 12;
+    return `${hour}:${String(m).padStart(2, '0')} ${ampm}`;
+}
+
 // Toggle checklist item status in view mode - FIXED VERSION
 function toggleChecklistItem(checklistId, itemIndex, isChecked, userId) {
     return new Promise((resolve, reject) => {
@@ -277,7 +432,10 @@ function displaySharedItem(item) {
         if (_liveUnsub) { _liveUnsub(); _liveUnsub = null; }
 
         const { userId, itemId, type } = item;
-        const itemRef = ref(database, `users/${userId}/${type}s/${itemId}`);
+        // Map type to Firebase path
+        const pathMap = { note: 'notes', checklist: 'checklists', smartChecklist: 'smartChecklists' };
+        const pathSegment = pathMap[type] || (type + 's');
+        const itemRef = ref(database, `users/${userId}/${pathSegment}/${itemId}`);
 
         // Show loading skeleton while first data arrives
         contentArea.innerHTML = `
@@ -298,6 +456,41 @@ function displaySharedItem(item) {
                         </div>
                         <h1 class="card-title">${escapeHtml(data.title)}</h1>
                         <div class="note-content">${escapeHtml(data.content || '')}</div>
+                    </div>`;
+            } else if (type === 'smartChecklist') {
+                // Smart checklist live view — show only today's items
+                const DAYS_SC = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+                const DAY_LABELS_SC = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+                const todaySC = DAYS_SC[new Date().getDay()];
+                const todayLabelSC = DAY_LABELS_SC[new Date().getDay()];
+                const todayItemsSC = (data.items || []).filter(i => i.day === todaySC);
+                const checkedSC = todayItemsSC.filter(i => i.checked).length;
+
+                contentArea.innerHTML = `
+                    <div class="card">
+                        <div class="view-mode-badge current live">
+                            <div class="live-dot"></div> Live &bull; Smart Checklist
+                        </div>
+                        <div class="smart-view-header">
+                            <h1 class="card-title">${escapeHtml(data.title)}</h1>
+                            <div class="smart-day-indicator">
+                                <i class="fas fa-calendar-day"></i> ${todayLabelSC}
+                                <span class="smart-progress">${checkedSC}/${todayItemsSC.length}</span>
+                            </div>
+                        </div>
+                        <div class="checkbox-list">
+                            ${todayItemsSC.length > 0 ? todayItemsSC.map(ci => `
+                                <div class="checkbox-item ${ci.checked ? 'checked' : ''}" style="cursor:default;pointer-events:none;">
+                                    <input type="checkbox" ${ci.checked ? 'checked' : ''} disabled
+                                        style="margin-right:12px;transform:scale(1.2);min-width:18px;">
+                                    <span class="item-text">${escapeHtml(ci.text)}</span>
+                                    ${ci.time && ci.time !== '00:00' ? `<span class="smart-item-time-badge"><i class="fas fa-clock"></i> ${formatTime12(ci.time)}</span>` : ''}
+                                </div>`).join('') : `
+                                <div class="empty-state" style="padding:20px;">
+                                    <i class="fas fa-moon" style="font-size:36px;color:#ccc;"></i>
+                                    <p>No items for ${todayLabelSC}</p>
+                                </div>`}
+                        </div>
                     </div>`;
             } else {
                 // Checklist live current view

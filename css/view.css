@@ -289,6 +289,105 @@
     100% { transform: scale(1); opacity: 1; }
 }
 
+/* ── Smart Checklist View ───────────────────────────────────── */
+.smart-view-header {
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.smart-view-header .card-title {
+    margin-bottom: 8px;
+}
+
+.smart-day-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.smart-progress {
+    background-color: rgba(255,255,255,0.25);
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 12px;
+}
+
+.smart-item-time-badge {
+    margin-left: auto;
+    font-size: 11px;
+    color: #667eea;
+    background-color: #f0f0ff;
+    padding: 2px 8px;
+    border-radius: 10px;
+    white-space: nowrap;
+}
+
+.all-days-summary {
+    border-top: 1px solid #eee;
+    padding-top: 15px;
+}
+
+.schedule-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 10px;
+}
+
+.schedule-day {
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    padding: 10px;
+    border: 1px solid #eee;
+}
+
+.schedule-day-active {
+    background-color: #f0f0ff;
+    border-color: #667eea;
+    box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.15);
+}
+
+.schedule-day-name {
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--primary);
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.schedule-today-tag {
+    background-color: var(--success);
+    color: white;
+    font-size: 9px;
+    padding: 1px 6px;
+    border-radius: 8px;
+    font-weight: 700;
+}
+
+.schedule-day-items {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.schedule-day-items li {
+    font-size: 12px;
+    padding: 3px 0;
+    border-bottom: 1px solid #f0f0f0;
+    word-break: break-word;
+}
+
+.schedule-day-items li:last-child {
+    border-bottom: none;
+}
+
 /* ── Mobile: 480px ──────────────────────────────────────────── */
 @media (max-width: 480px) {
     .container {
