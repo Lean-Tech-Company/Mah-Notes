@@ -758,6 +758,20 @@ async function getOrCreateToken(userId, itemId, itemType, viewMode, item) {
         const publicRef = ref(database, `shareTokens/${data.token}`);
         const pubSnap = await get(publicRef);
         if (pubSnap.exists()) {
+            // For reference tokens, always refresh the snapshot data so viewers
+            // see the latest items (including day/time fields)
+            if (viewMode === 'reference') {
+                const freshRef = {
+                    title: item.title,
+                    items: (item.items || []).map(i => {
+                        const m = { text: i.text, checked: false };
+                        if (i.day)  m.day  = i.day;
+                        if (i.time) m.time = i.time;
+                        return m;
+                    })
+                };
+                await update(publicRef, { referenceData: freshRef });
+            }
             return data.token;
         }
     }
@@ -775,7 +789,12 @@ async function getOrCreateToken(userId, itemId, itemType, viewMode, item) {
     if (viewMode === 'reference') {
         tokenData.referenceData = {
             title: item.title,
-            items: (item.items || []).map(i => ({ text: i.text, checked: false }))
+            items: (item.items || []).map(i => {
+                const mapped = { text: i.text, checked: false };
+                if (i.day)  mapped.day  = i.day;
+                if (i.time) mapped.time = i.time;
+                return mapped;
+            })
         };
     }
 
