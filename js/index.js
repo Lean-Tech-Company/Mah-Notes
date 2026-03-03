@@ -38,6 +38,10 @@ function loadUserData(userId) {
         const notes = snapshot.val();
         displayNotes(notes);
         hideLoader();
+    }, (error) => {
+        console.error('Notes fetch error:', error);
+        hideLoader();
+        showFirebaseRulesWarning();
     });
 
     const checklistsRef = ref(database, 'users/' + userId + '/checklists');
@@ -46,6 +50,9 @@ function loadUserData(userId) {
         checkAndResetReusableChecklists(userId, checklists);
         displayChecklists(checklists);
         hideLoader();
+    }, (error) => {
+        console.error('Checklists fetch error:', error);
+        hideLoader();
     });
 
     const smartChecklistsRef = ref(database, 'users/' + userId + '/smartChecklists');
@@ -53,6 +60,9 @@ function loadUserData(userId) {
         const smartChecklists = snapshot.val();
         autoResetSmartChecklists(userId, smartChecklists);
         displaySmartChecklists(smartChecklists);
+        hideLoader();
+    }, (error) => {
+        console.error('Smart checklists fetch error:', error);
         hideLoader();
     });
 }
@@ -700,6 +710,26 @@ function showNotification(message, type) {
     setTimeout(() => {
         notification.remove();
     }, 3000);
+}
+
+// Firebase auth warning banner (authorized domain missing)
+function showFirebaseRulesWarning() {
+    if (document.getElementById('firebase-rules-banner')) return; // only show once
+    const banner = document.createElement('div');
+    banner.id = 'firebase-rules-banner';
+    banner.style.cssText = `
+        background:#fff3cd;border:1px solid #ffc107;color:#856404;
+        padding:12px 16px;border-radius:10px;margin-bottom:12px;
+        font-size:13px;line-height:1.6;
+    `;
+    banner.innerHTML = `
+        <strong><i class="fas fa-exclamation-triangle"></i> Data not loading on GitHub Pages?</strong><br>
+        Firebase is blocking sign-ins because <code>lean-tech-company.github.io</code> is not an authorized domain.<br>
+        Fix: <a href="https://console.firebase.google.com" target="_blank" style="color:#0d6efd;">Firebase Console</a>
+        → <b>Authentication → Settings → Authorized domains → Add domain</b> → enter <code>lean-tech-company.github.io</code>
+    `;
+    const container = document.querySelector('.container');
+    if (container) container.prepend(banner);
 }
 
 // ── Share Token System ─────────────────────────────────────────
