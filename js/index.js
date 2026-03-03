@@ -17,6 +17,30 @@ const provider = new GoogleAuthProvider();
 let currentQuickType = 'note';
 let currentEditingChecklistId = null;
 
+// ── Privacy Mode Toggle ──────────────────────────────────────
+(function initPrivacyMode() {
+    const btn = document.getElementById('privacy-toggle-btn');
+    const isOn = localStorage.getItem('privacyMode') === 'true';
+    if (isOn) {
+        document.body.classList.add('privacy-mode');
+        btn.classList.add('active');
+        btn.title = 'Content hidden — click to show';
+        btn.innerHTML = '<i class="fas fa-eye"></i>';
+    }
+    btn.addEventListener('click', () => {
+        const nowOn = document.body.classList.toggle('privacy-mode');
+        btn.classList.toggle('active', nowOn);
+        if (nowOn) {
+            btn.title = 'Content hidden — click to show';
+            btn.innerHTML = '<i class="fas fa-eye"></i>';
+        } else {
+            btn.title = 'Toggle content visibility';
+            btn.innerHTML = '<i class="fas fa-eye-slash"></i>';
+        }
+        localStorage.setItem('privacyMode', nowOn);
+    });
+})();
+
 // Check if user is logged in
 onAuthStateChanged(auth, (user) => {
     if (user) {
