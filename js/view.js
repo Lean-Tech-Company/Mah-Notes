@@ -597,6 +597,105 @@ function displaySharedItem(item) {
                 });
             });
         }
+    } else if (item.type === 'smartChecklist') {
+        // ── SMART CHECKLIST REFERENCE VIEW ──────────────────────────────
+        // Shows today's items with interactive checkboxes. Resets daily.
+        const SC_DAYS   = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
+        const SC_LABELS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+        const SC_SHORT  = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+        const todayIdx  = new Date().getDay();
+        const today     = SC_DAYS[todayIdx];
+        const todayLabel = SC_LABELS[todayIdx];
+        const todayDate = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+
+        const allItems = item.items || [];
+
+        // Daily-reset storage key: includes date so a new day = clean slate
+        const storageKey = 'ref_smart_' + btoa(encodeURIComponent(item.title || '')).slice(0, 20) + '_' + todayDate;
+        let saved = {};
+        try { saved = JSON.parse(sessionStorage.getItem(storageKey) || '{}'); } catch (e) {}
+
+        // Today's items (with their real global indices)
+        const todayItems = [];
+        allItems.forEach((it, idx) => {
+            if (it.day === today) todayItems.push({ ...it, _gIdx: idx });
+        });
+
+        const checkedCount = todayItems.filter((_, i) => saved[todayItems[i]._gIdx] === true).length;
+
+        // Build today's checklist
+        const todayListHtml = todayItems.length > 0 ? todayItems.map(ci => {
+            const isChecked = saved[ci._gIdx] === true;
+            return `<div class="checkbox-item ${isChecked ? 'checked' : ''}" data-index="${ci._gIdx}">
+                <input type="checkbox" ${isChecked ? 'checked' : ''}
+                    style="margin-right:12px;transform:scale(1.2);cursor:pointer;min-width:18px;">
+                <span class="item-text">${escapeHtml(ci.text)}</span>
+                ${ci.time && ci.time !== '00:00' ? `<span class="smart-item-time-badge"><i class="fas fa-clock"></i> ${formatTime12(ci.time)}</span>` : ''}
+            </div>`;
+        }).join('') : `
+            <div class="empty-state" style="padding:24px;">
+                <i class="fas fa-moon" style="font-size:40px;color:#ccc;"></i>
+                <h2 style="margin-top:10px;">No items for ${todayLabel}</h2>
+                <p>Check the full schedule below for other days.</p>
+            </div>`;
+
+        // Build full-week schedule (browse view)
+        const weekBrowseHtml = SC_DAYS.map((d, di) => {
+            const dayItems = allItems.filter(it => it.day === d);
+            if (dayItems.length === 0) return '';
+            const isToday = d === today;
+            return `
+                <div class="schedule-day ${isToday ? 'schedule-day-active' : ''}">
+                    <div class="schedule-day-name">${SC_LABELS[di]} ${isToday ? '<span class="schedule-today-tag">TODAY</span>' : ''}</div>
+                    <ul class="schedule-day-items">
+                        ${dayItems.map(it => `<li>${escapeHtml(it.text)}${it.time && it.time !== '00:00' ? ` <small style="color:#999;">${formatTime12(it.time)}</small>` : ''}</li>`).join('')}
+                    </ul>
+                </div>`;
+        }).join('');
+
+        contentArea.innerHTML = `
+            <div class="card">
+                <div class="view-mode-badge reference"><i class="fas fa-list-check"></i> Reference View</div>
+                <div class="smart-view-header">
+                    <h1 class="card-title">${escapeHtml(item.title)}</h1>
+                    <div class="smart-day-indicator">
+                        <i class="fas fa-calendar-day"></i> ${todayLabel}
+                        ${todayItems.length > 0 ? `<span class="smart-progress" id="ref-smart-progress">${checkedCount}/${todayItems.length}</span>` : ''}
+                    </div>
+                </div>
+                <div class="checkbox-list" id="ref-smart-today">
+                    ${todayListHtml}
+                </div>
+                ${weekBrowseHtml ? `
+                <details class="ref-week-details">
+                    <summary><i class="fas fa-calendar-week"></i> Full Week Schedule</summary>
+                    <div class="schedule-grid">${weekBrowseHtml}</div>
+                </details>` : ''}
+                <div class="ref-notice"><i class="fas fa-sync-alt"></i> This checklist refreshes daily. Your progress resets each new day automatically.</div>
+            </div>
+        `;
+
+        // Wire up today's checkboxes (sessionStorage only — no DB writes)
+        const todayContainer = document.getElementById('ref-smart-today');
+        const progressEl = document.getElementById('ref-smart-progress');
+        todayContainer.querySelectorAll('.checkbox-item').forEach(rowEl => {
+            const cb = rowEl.querySelector('input[type="checkbox"]');
+            cb.addEventListener('change', () => {
+                const idx = parseInt(rowEl.getAttribute('data-index'));
+                rowEl.classList.toggle('checked', cb.checked);
+                let state = {};
+                try { state = JSON.parse(sessionStorage.getItem(storageKey) || '{}'); } catch (e) {}
+                state[idx] = cb.checked;
+                sessionStorage.setItem(storageKey, JSON.stringify(state));
+
+                // Update progress counter
+                if (progressEl) {
+                    const allCbs = todayContainer.querySelectorAll('input[type="checkbox"]');
+                    const nowChecked = Array.from(allCbs).filter(c => c.checked).length;
+                    progressEl.textContent = `${nowChecked}/${allCbs.length}`;
+                }
+            });
+        });
     } else {
         showItemNotFound();
     }
