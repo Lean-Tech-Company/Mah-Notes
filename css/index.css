@@ -24,6 +24,34 @@
     font-size: 14px;
 }
 
+/* ── Privacy Toggle Button ──────────────────────────────────── */
+.btn-privacy {
+    background: #6c757d;
+    color: #fff;
+    border: none;
+    padding: 6px 12px;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: var(--transition);
+    font-size: 14px;
+}
+
+.btn-privacy:hover {
+    background: #5a6268;
+}
+
+.btn-privacy.active {
+    background: var(--primary);
+}
+
+/* When privacy mode is ON, hide note body content */
+body.privacy-mode .note-content,
+body.privacy-mode .smart-badge,
+body.privacy-mode .smart-today-count,
+body.privacy-mode .smart-today-badge {
+    display: none !important;
+}
+
 /* ── Main Content Grid ──────────────────────────────────────── */
 .main-content {
     display: grid;
