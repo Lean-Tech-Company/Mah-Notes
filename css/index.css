@@ -52,6 +52,28 @@ body.privacy-mode .smart-today-badge {
     display: none !important;
 }
 
+/* Per-item hide: hides content below the title row */
+.note-item.content-hidden .note-content,
+.note-item.content-hidden .smart-today-count {
+    display: none !important;
+}
+
+/* Per-item hide button */
+.item-hide-btn {
+    color: #999;
+    font-size: 13px;
+    transition: color 0.2s;
+}
+
+.item-hide-btn:hover {
+    color: var(--primary);
+}
+
+/* When item is individually hidden, tint the title row slightly */
+.note-item.content-hidden {
+    opacity: 0.75;
+}
+
 /* ── Main Content Grid ──────────────────────────────────────── */
 .main-content {
     display: grid;
