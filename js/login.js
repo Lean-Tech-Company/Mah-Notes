@@ -11,9 +11,22 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 
+// ── Loader helpers ─────────────────────────────────────────
+function showLoader(text = 'Loading...') {
+    const loader = document.getElementById('loader');
+    const loaderText = loader.querySelector('.loader-text');
+    if (loaderText) loaderText.textContent = text;
+    loader.classList.add('active');
+}
+
+function hideLoader() {
+    document.getElementById('loader').classList.remove('active');
+}
+
 // Redirect already-logged-in users straight to the app
 onAuthStateChanged(auth, (user) => {
     if (user) {
+        showLoader('Signing in...');
         window.location.href = 'index.html';
     }
 });
@@ -46,6 +59,8 @@ document.getElementById('login-form').addEventListener('submit', (e) => {
     const isSignUp = document.querySelector('button[type="submit"]').textContent === 'Sign Up';
     const errorElement = document.getElementById('login-error');
 
+    showLoader(isSignUp ? 'Creating account...' : 'Signing in...');
+
     if (isSignUp) {
         // Sign up
         createUserWithEmailAndPassword(auth, email, password)
@@ -53,6 +68,7 @@ document.getElementById('login-form').addEventListener('submit', (e) => {
                 window.location.href = 'index.html';
             })
             .catch((error) => {
+                hideLoader();
                 errorElement.textContent = error.message;
             });
     } else {
@@ -62,6 +78,7 @@ document.getElementById('login-form').addEventListener('submit', (e) => {
                 window.location.href = 'index.html';
             })
             .catch((error) => {
+                hideLoader();
                 errorElement.textContent = error.message;
             });
     }
@@ -69,11 +86,13 @@ document.getElementById('login-form').addEventListener('submit', (e) => {
 
 // Google sign in
 document.getElementById('google-signin').addEventListener('click', () => {
+    showLoader('Signing in with Google...');
     signInWithPopup(auth, provider)
         .then((result) => {
             window.location.href = 'index.html';
         })
         .catch((error) => {
+            hideLoader();
             document.getElementById('login-error').textContent = error.message;
         });
 });
