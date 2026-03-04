@@ -29,9 +29,6 @@
                         <span></span><span></span><span></span>
                     </button>
                     <div class="hamburger-dropdown" id="hamburger-dropdown">
-                        <button class="btn btn-warning dropdown-item-btn" id="view-page-btn">
-                            <i class="fas fa-eye"></i> View Page
-                        </button>
                         <button class="btn btn-privacy dropdown-item-btn" id="privacy-toggle-btn" title="Toggle content visibility">
                             <i class="fas fa-eye-slash"></i> Privacy
                         </button>
@@ -54,6 +51,10 @@
                             <i class="fas fa-plus"></i> New Note
                         </button>
                     </div>
+                    <div class="list-search-bar">
+                        <i class="fas fa-search list-search-icon"></i>
+                        <input type="text" id="notes-search" class="list-search-input" placeholder="Search notes...">
+                    </div>
                     <div class="notes-list" id="notes-list">
                         <!-- Notes will be dynamically added here -->
                     </div>
@@ -72,6 +73,10 @@
                                 <i class="fas fa-calendar-week"></i> Smart Checklist
                             </button>
                         </div>
+                    </div>
+                    <div class="list-search-bar">
+                        <i class="fas fa-search list-search-icon"></i>
+                        <input type="text" id="checklists-search" class="list-search-input" placeholder="Search checklists...">
                     </div>
                     <div class="notes-list" id="checklists-list">
                         <!-- Checklists will be dynamically added here -->

@@ -805,9 +805,25 @@ function saveQuickContent(type, content, destinationIds) {
     });
 }
 
-// View page button
-document.getElementById('view-page-btn').addEventListener('click', () => {
-    window.location.href = 'view.html';
+// ── List search filters ────────────────────────────────────────
+function applySearch(inputId, listIds) {
+    const query = document.getElementById(inputId).value.toLowerCase().trim();
+    listIds.forEach(listId => {
+        const list = document.getElementById(listId);
+        if (!list) return;
+        list.querySelectorAll('.note-item').forEach(item => {
+            const text = item.textContent.toLowerCase();
+            item.style.display = (!query || text.includes(query)) ? '' : 'none';
+        });
+    });
+}
+
+document.getElementById('notes-search').addEventListener('input', () => {
+    applySearch('notes-search', ['notes-list']);
+});
+
+document.getElementById('checklists-search').addEventListener('input', () => {
+    applySearch('checklists-search', ['checklists-list', 'smart-checklists-list']);
 });
 
 // Logout functionality
